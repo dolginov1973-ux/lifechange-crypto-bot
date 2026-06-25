@@ -1,0 +1,52 @@
+name = "lifechange-crypto-bot"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+# nodejs_compat is not required for this scaffold (we use Web Crypto + grammY's web build),
+# but uncomment if a feature module later needs Node built-ins.
+# compatibility_flags = ["nodejs_compat"]
+
+# --- D1 (SQLite) -----------------------------------------------------------
+# binding name MUST be "DB" (Env.DB). Replace database_id after `wrangler d1 create`.
+[[d1_databases]]
+binding = "DB"
+database_name = "lifechange-crypto-bot"
+# TODO(owner): paste the id printed by `wrangler d1 create lifechange-crypto-bot`
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# --- Cron Triggers ---------------------------------------------------------
+# Hourly expiry sweep -> scheduled() in src/index.ts -> runSweep(env).
+[triggers]
+crons = ["0 * * * *"]
+
+# --- Plain (non-secret) vars ----------------------------------------------
+# These are safe to commit as placeholders; tune per environment.
+[vars]
+# Our Bitunix referral / partner identifiers used by the auto-verify contract.
+OUR_REF_CODE     = "REPLACE_OUR_REF_CODE"          # result.invitationCode must equal this
+OUR_PARTNER_UID  = "REPLACE_OUR_PARTNER_UID"       # result.parentUid must equal this (string-compared)
+# Trial eligibility: CURRENT balance (allAmount) must be >= this many USDT.
+MIN_BALANCE_USDT = "50"
+# VIP supergroup chat id (negative, e.g. -1001234567890). bot must be admin there.
+VIP_CHAT_ID      = "REPLACE_VIP_SUPERGROUP_CHAT_ID" # TODO(owner): convert Group 2 -> supergroup, add bot admin
+# Private admin-review chat id where approval cards are posted.
+ADMIN_CHAT_ID    = "REPLACE_ADMIN_CHAT_ID"
+# Bot @username (no leading @), used in deep-links / copy.
+BOT_USERNAME     = "lifechange_crypto_bot"
+# Public Bitunix referral link shown to trial users (per the compliance copy).
+REFERRAL_LINK    = "https://www.bitunix.com/register?ref=REPLACE_OUR_REF_CODE"
+
+# --- SECRETS (do NOT put values here; set via wrangler) --------------------
+# Run each once after `wrangler login`:
+#   wrangler secret put BOT_TOKEN              # Telegram bot token (BotFather)
+#   wrangler secret put BITUNIX_PARTNER_TOKEN  # partners.bitunix.com session token (refreshable)
+#   wrangler secret put CRYPTOPAY_TOKEN        # CryptoBot Crypto Pay app token  # TODO(owner): provision
+#   wrangler secret put WEBHOOK_SECRET         # random string; guards the /bot webhook route
+# For local `wrangler dev`, mirror these in a gitignored .dev.vars file.
+
+# --- Routing / custom domain ----------------------------------------------
+# *.workers.dev certs are INCOMPATIBLE with Telegram webhooks — attach a free
+# custom domain in Cloudflare and set the Telegram webhook to it.
+# TODO(owner): add the route once the domain is attached, e.g.:
+# [[routes]]
+# pattern = "bot.lifechangecrypto.example"
+# custom_domain = true

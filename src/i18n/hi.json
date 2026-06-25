@@ -1,0 +1,61 @@
+{
+  "disclaimer": "यह financial advice नहीं है। हाई-leverage crypto futures में पूरा पैसा डूबने का बड़ा रिस्क है। कभी वो पैसा न लगाएं जिसका नुकसान आप बर्दाश्त न कर सकें।",
+
+  "start_welcome": "Lifechange Crypto VIP में आपका स्वागत है।\n\nयह अंदर का कमरा है: live trade ideas, entry, leverage, SL और TP levels, और हर एक के पीछे की सोच — सीखने के लिए, ताकि आप खुद market पढ़ना सीख सकें।\n\nआगे बढ़ने के लिए अपनी भाषा चुनें।",
+  "language_picker": "अपनी भाषा चुनें:",
+  "language_set": "भाषा हिन्दी पर सेट हो गई। चलिए आपको set up करते हैं।",
+
+  "main_menu_header": "आप कैसे अंदर आना चाहेंगे?\n\n{disclaimer}",
+  "main_menu_trial_btn": "मुफ़्त 30-दिन trial (referral)",
+  "main_menu_buy_btn": "USDT से subscribe करें",
+
+  "trial_intro": "मुफ़्त 30-दिन VIP trial — यह ऐसे काम करता है:\n\n1. इसी link से Bitunix पर रजिस्टर करें (यह हमारा link होना ज़रूरी है, इसी से हम आपको पहचानते हैं):\n{referral_link}\n\n2. अपने account में कम से कम {min_balance} USDT डालें (यह आपका ही पैसा रहता है — यह आपकी trading capital है, हमें कोई fee नहीं)।\n\n3. मुझे अपना Bitunix UID भेजें (app खोलें → Profile → अपने UID पर tap करके copy करें)।\n\nनोट: Bitunix एक exchange है जिसके साथ हम partner हैं। यह licensed या regulated नहीं है। Trading educational है और पूरी तरह आपके अपने रिस्क पर है।\n\n{disclaimer}",
+  "trial_ask_uid": "अब मुझे अपना Bitunix UID भेजें — सिर्फ़ numbers (उदाहरण: 88761234)।",
+  "trial_bad_uid_format": "यह Bitunix UID जैसा नहीं लग रहा। इसमें सिर्फ़ numbers होने चाहिए, कोई space या अक्षर नहीं। Bitunix → Profile → अपने UID पर tap करके copy करें, फिर यहाँ paste करें।",
+  "trial_uid_already_used": "यह UID पहले ही एक trial के लिए use हो चुका है। हर Bitunix account को ज़िंदगी में एक ही मुफ़्त trial मिलता है। अगर आपको लगता है यह गलती है, तो support से संपर्क करें।",
+  "trial_rate_limited": "आप UIDs थोड़ा तेज़ भेज रहे हैं। कृपया कुछ मिनट रुककर फिर कोशिश करें।",
+  "trial_checking": "मिल गया — अब आपका Bitunix account चेक कर रहा हूँ। इसमें एक पल लगता है।",
+  "trial_ask_screenshot": "बस थोड़ा और। एक ही screenshot भेजें जिसमें आपका Bitunix account हमारे code के तहत रजिस्टर और आपका deposit दिखे। इससे हमें जल्दी confirm करने में मदद मिलती है।",
+  "trial_approved_welcome": "आप verified हैं — VIP में आपका स्वागत है।\n\nVIP group में access के लिए tap करें:\n{invite}\n\nआपका trial 30 दिन चलेगा।\n\n{disclaimer}",
+  "trial_needs_manual": "धन्यवाद — आपकी details हमें मिल गई हैं और हम अभी इन्हें manually देख रहे हैं। यह आमतौर पर जल्दी हो जाता है (हम दिन में दो बार queue clear करते हैं)। approve होते ही आपको यहीं message मिल जाएगा।\n\n{disclaimer}",
+  "trial_rejected": "हम अभी उस UID के लिए हमारे referral link के तहत एक qualifying deposit verify नहीं कर पाए।\n\nयह पक्का करें कि आपने: (1) हमारे link से रजिस्टर किया, और (2) account में अभी कम से कम {min_balance} USDT है। यह हो जाने पर अपना UID दोबारा भेजें।",
+  "trial_need_proof": "Confirm करने के लिए हमें एक साफ़ screenshot चाहिए। कृपया एक image भेजें जिसमें आपका Bitunix account (हमारे code के तहत रजिस्टर) और आपका current balance दिखे।",
+
+  "paid_tier_menu_header": "अपना VIP plan चुनें (USDT):\n\nMonthly सबसे flexible है। Quarterly हर महीने के हिसाब से सस्ता पड़ता है। Lifetime एक ही payment, हमेशा के लिए अंदर।\n\n{disclaimer}",
+  "paid_tier_monthly": "Monthly — {price} USDT",
+  "paid_tier_quarterly": "Quarterly (3 महीने) — {price} USDT",
+  "paid_tier_lifetime": "Lifetime — {price} USDT",
+  "paid_invoice_created": "आपका invoice तैयार है। {price} USDT यहाँ pay करें:\n{pay_url}\n\nयह link 30 मिनट तक valid है। Payment confirm होते ही access अपने आप खुल जाता है।\n\n{disclaimer}",
+  "paid_invoice_expired": "वह invoice payment से पहले expire हो गया। कोई बात नहीं — नया लेने के लिए दोबारा किसी plan पर tap करें।",
+  "paid_payment_confirmed": "Payment confirm हो गई — VIP में आपका स्वागत है।\n\nVIP group में access के लिए tap करें:\n{invite}\n\n{disclaimer}",
+
+  "vip_welcome_dm": "आप अंदर हैं। Lifechange Crypto VIP room में आपका स्वागत है।\n\nपहले क्या करें:\n• Group के लिए notifications on करें ताकि कोई live entry miss न हो।\n• हर idea पूरी पढ़ें — entry zone, leverage, SL और TP वहाँ एक वजह से हैं।\n• हर position पर अपना risk खुद manage करें। सीखते समय size छोटा रखें।\n\nयहाँ सब कुछ सीखने के लिए शेयर किया जाता है — ताकि आप trade करना सीखें, किसी नतीजे का वादा नहीं।\n\n{disclaimer}",
+
+  "admin_card_title": "नया trial #{id}\nUser: {tg}\nUID: {uid}\nLang: {lang}\nBalance check: {verdict}",
+  "admin_btn_approve": "Approve",
+  "admin_btn_reject": "Reject",
+  "admin_btn_needproof": "बेहतर proof चाहिए",
+  "admin_action_approved": "Trial #{id} approve हुआ। User को notify कर दिया और invite भेज दिया।",
+  "admin_action_rejected": "Trial #{id} reject हुआ। User को notify कर दिया।",
+  "admin_action_needproof": "Trial #{id} पर user से बेहतर proof माँगा।",
+  "admin_action_already_done": "Trial #{id} पहले ही decide हो चुका था। कोई बदलाव नहीं।",
+  "admin_queue_empty": "Queue खाली है — कोई trial इंतज़ार में नहीं।",
+  "admin_queue_header": "{count} trial इंतज़ार में। सबसे पुराना पहले:",
+  "admin_queue_item": "#{id} · {tg} · UID {uid} · {lang} · इंतज़ार {age}",
+  "admin_token_expired_alert": "ध्यान दें: Bitunix partner token expired या error लग रहा है ({reason})। Auto-verify manual review पर fall back कर रहा है। जब हो सके BITUNIX_PARTNER_TOKEN refresh करें।",
+
+  "cadence_welcome": "VIP room में settle हो रहे हैं? एक tip: हर idea खोलें और SL तथा TP follow करें — सीखने वाली बात वहीं है। हर एक पर अपना risk खुद manage करें।\n\n{disclaimer}",
+  "cadence_mid": "आपका access आधा बीत चुका है। कैसा चल रहा है? अगर यह room entries कैसे बनती हैं यह सीखने में काम आया है, तो आप menu से कभी भी आगे का access lock कर सकते हैं।\n\n{disclaimer}",
+  "cadence_warn3d": "आपका VIP access 3 दिन में खत्म हो रहा है। बिना break के live ideas जारी रखने के लिए, जब तैयार हों menu से renew कर सकते हैं।\n\n{disclaimer}",
+  "cadence_lastday": "आपके VIP access का आखिरी दिन। आज के बाद renew करने तक live room चला जाएगा। अंदर बने रहने के लिए menu से कभी भी renew करें।\n\n{disclaimer}",
+  "cadence_winback": "आपका VIP access खत्म हो गया है और आपको room से हटा दिया गया है। दरवाज़ा अब भी खुला है — menu से renew करें और आप तुरंत वापस अंदर आ जाएँगे।\n\n{disclaimer}",
+
+  "expired_removed_renew": "आपका VIP access expire हो गया है, इसलिए आपको group से हटा दिया गया है। दोबारा जुड़ने के लिए menu से कभी भी renew करें।\n\n{disclaimer}",
+
+  "back": "वापस",
+  "cancel": "रद्द करें",
+  "cancelled": "रद्द कर दिया। /start से कभी भी menu खोलें।",
+  "error_try_again": "हमारी तरफ़ से कुछ गड़बड़ हो गई। कृपया थोड़ी देर में फिर कोशिश करें।",
+  "not_entitled": "अभी आपके पास active VIP access नहीं है। trial शुरू करने या subscribe करने के लिए /start खोलें।",
+  "trial_already_active": "आपके पास पहले से active VIP access है। 🎟"
+}

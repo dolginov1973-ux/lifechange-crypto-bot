@@ -1,0 +1,61 @@
+{
+  "disclaimer": "Not financial advice. High-leverage crypto futures carry a high risk of total loss. Never risk money you can't afford to lose.",
+
+  "start_welcome": "Welcome to Lifechange Crypto VIP.\n\nThis is the inside room: live trade ideas, entries, leverage, SL and TP levels, and the reasoning behind each one — for education, so you can learn to read the market yourself.\n\nPick your language to continue.",
+  "language_picker": "Choose your language:",
+  "language_set": "Language set to English. Let's get you set up.",
+
+  "main_menu_header": "How would you like to get in?\n\n{disclaimer}",
+  "main_menu_trial_btn": "Free 30-day trial (referral)",
+  "main_menu_buy_btn": "Subscribe with USDT",
+
+  "trial_intro": "Free 30-day VIP trial — here's how it works:\n\n1. Register on Bitunix using THIS link (it has to be our link, that's how we recognize you):\n{referral_link}\n\n2. Fund your account with at least {min_balance} USDT (this stays your money — it's your trading capital, not a fee to us).\n\n3. Send me your Bitunix UID (open the app → Profile → tap your UID to copy it).\n\nNote: Bitunix is an exchange we partner with. It is not licensed or regulated. Trading is educational and entirely at your own risk.\n\n{disclaimer}",
+  "trial_ask_uid": "Send me your Bitunix UID now — numbers only (for example: 88761234).",
+  "trial_bad_uid_format": "That doesn't look like a Bitunix UID. It should be numbers only, no spaces or letters. Open Bitunix → Profile → tap your UID to copy it, then paste it here.",
+  "trial_uid_already_used": "That UID has already been used for a trial. Each Bitunix account gets one free trial, ever. If you think this is a mistake, contact support.",
+  "trial_rate_limited": "You're sending UIDs a bit fast. Please wait a few minutes and try again.",
+  "trial_checking": "Got it — checking your Bitunix account now. This takes a moment.",
+  "trial_ask_screenshot": "Almost there. Send ONE screenshot that shows your Bitunix account registered under our code and your deposit. This helps us confirm it quickly.",
+  "trial_approved_welcome": "You're verified — welcome to VIP.\n\nTap to request access to the VIP group:\n{invite}\n\nYour trial runs for 30 days.\n\n{disclaimer}",
+  "trial_needs_manual": "Thanks — we've got your details and we're reviewing them manually now. This is usually quick (we clear the queue a couple of times a day). You'll get a message here the moment you're approved.\n\n{disclaimer}",
+  "trial_rejected": "We couldn't verify a qualifying deposit under our referral link for that UID yet.\n\nMake sure you: (1) registered with OUR link, and (2) have at least {min_balance} USDT currently in the account. Once that's done, send your UID again.",
+  "trial_need_proof": "We need a clearer screenshot to confirm. Please send one image showing your Bitunix account (registered under our code) and your current balance.",
+
+  "paid_tier_menu_header": "Choose your VIP plan (USDT):\n\nMonthly keeps it flexible. Quarterly works out cheaper per month. Lifetime is one payment, in for good.\n\n{disclaimer}",
+  "paid_tier_monthly": "Monthly — {price} USDT",
+  "paid_tier_quarterly": "Quarterly (3 months) — {price} USDT",
+  "paid_tier_lifetime": "Lifetime — {price} USDT",
+  "paid_invoice_created": "Your invoice is ready. Pay {price} USDT here:\n{pay_url}\n\nThe link is valid for 30 minutes. Access opens automatically the moment your payment confirms.\n\n{disclaimer}",
+  "paid_invoice_expired": "That invoice expired before payment. No problem — tap a plan again to get a fresh one.",
+  "paid_payment_confirmed": "Payment confirmed — welcome to VIP.\n\nTap to request access to the VIP group:\n{invite}\n\n{disclaimer}",
+
+  "vip_welcome_dm": "You're in. Welcome to the Lifechange Crypto VIP room.\n\nWhat to do first:\n• Turn on notifications for the group so you don't miss live entries.\n• Read each idea fully — entry zone, leverage, SL and TP are there for a reason.\n• Manage your own risk on every position. Size small while you learn.\n\nEverything here is shared for education — to help you learn to trade, not as a promise of any outcome.\n\n{disclaimer}",
+
+  "admin_card_title": "New trial #{id}\nUser: {tg}\nUID: {uid}\nLang: {lang}\nBalance check: {verdict}",
+  "admin_btn_approve": "Approve",
+  "admin_btn_reject": "Reject",
+  "admin_btn_needproof": "Need better proof",
+  "admin_action_approved": "Approved trial #{id}. User notified and invite sent.",
+  "admin_action_rejected": "Rejected trial #{id}. User notified.",
+  "admin_action_needproof": "Asked user for better proof on trial #{id}.",
+  "admin_action_already_done": "Trial #{id} was already decided. No change.",
+  "admin_queue_empty": "Queue is clear — no trials waiting.",
+  "admin_queue_header": "{count} trial(s) waiting. Oldest first:",
+  "admin_queue_item": "#{id} · {tg} · UID {uid} · {lang} · waiting {age}",
+  "admin_token_expired_alert": "Heads up: the Bitunix partner token looks expired or errored ({reason}). Auto-verify is falling back to manual review. Refresh BITUNIX_PARTNER_TOKEN when you can.",
+
+  "cadence_welcome": "Settling into the VIP room? Quick tip: open every idea and follow the SL and TP — that's where the learning is. Manage your own risk on each one.\n\n{disclaimer}",
+  "cadence_mid": "You're halfway through your access. How's it going? If the room's been useful for learning how the entries are built, you can lock in continued access any time from the menu.\n\n{disclaimer}",
+  "cadence_warn3d": "Your VIP access ends in 3 days. To keep the live ideas coming without a break, you can renew from the menu whenever you're ready.\n\n{disclaimer}",
+  "cadence_lastday": "Last day of your VIP access. After today you'll lose the live room until you renew. Renew any time from the menu to stay in.\n\n{disclaimer}",
+  "cadence_winback": "Your VIP access has ended and you've been removed from the room. The door's still open — renew from the menu and you'll be back in right away.\n\n{disclaimer}",
+
+  "expired_removed_renew": "Your VIP access has expired, so you've been removed from the group. Renew any time from the menu to rejoin.\n\n{disclaimer}",
+
+  "back": "Back",
+  "cancel": "Cancel",
+  "cancelled": "Cancelled. Open the menu any time with /start.",
+  "error_try_again": "Something went wrong on our end. Please try again in a moment.",
+  "not_entitled": "You don't have active VIP access right now. Open /start to begin a trial or subscribe.",
+  "trial_already_active": "You already have active VIP access. 🎟"
+}

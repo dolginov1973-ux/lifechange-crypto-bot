@@ -1,0 +1,61 @@
+{
+  "disclaimer": "Không phải tư vấn tài chính. Giao dịch crypto futures đòn bẩy cao có rủi ro mất vốn toàn bộ. Không bao giờ dùng số tiền bạn không thể chấp nhận mất.",
+
+  "start_welcome": "Chào mừng đến Lifechange Crypto VIP.\n\nĐây là phòng nội bộ: trade ideas trực tiếp, entry, leverage, các mức SL và TP, cùng lý do đằng sau mỗi quyết định — mang tính giáo dục, để bạn tự học cách đọc thị trường.\n\nChọn ngôn ngữ của bạn để tiếp tục.",
+  "language_picker": "Chọn ngôn ngữ của bạn:",
+  "language_set": "Đã đặt ngôn ngữ là Tiếng Việt. Cùng thiết lập cho bạn nào.",
+
+  "main_menu_header": "Bạn muốn vào bằng cách nào?\n\n{disclaimer}",
+  "main_menu_trial_btn": "Dùng thử miễn phí 30 ngày (referral)",
+  "main_menu_buy_btn": "Đăng ký bằng USDT",
+
+  "trial_intro": "Dùng thử VIP miễn phí 30 ngày — cách hoạt động như sau:\n\n1. Đăng ký Bitunix bằng CHÍNH link này (phải là link của chúng tôi, đó là cách chúng tôi nhận ra bạn):\n{referral_link}\n\n2. Nạp ít nhất {min_balance} USDT vào tài khoản (số tiền này vẫn là của bạn — đó là vốn giao dịch của bạn, không phải phí trả cho chúng tôi).\n\n3. Gửi cho tôi UID Bitunix của bạn (mở app → Hồ sơ → chạm vào UID để sao chép).\n\nLưu ý: Bitunix là một sàn giao dịch mà chúng tôi hợp tác. Sàn không được cấp phép hay quản lý. Việc giao dịch mang tính giáo dục và hoàn toàn do bạn tự chịu rủi ro.\n\n{disclaimer}",
+  "trial_ask_uid": "Gửi cho tôi UID Bitunix của bạn ngay — chỉ chữ số (ví dụ: 88761234).",
+  "trial_bad_uid_format": "Cái này không giống UID Bitunix. Nó chỉ gồm chữ số, không có khoảng trắng hay chữ cái. Mở Bitunix → Hồ sơ → chạm vào UID để sao chép, rồi dán vào đây.",
+  "trial_uid_already_used": "UID này đã được dùng cho một lần dùng thử rồi. Mỗi tài khoản Bitunix chỉ được một lần dùng thử miễn phí, vĩnh viễn. Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ hỗ trợ.",
+  "trial_rate_limited": "Bạn đang gửi UID hơi nhanh. Vui lòng đợi vài phút rồi thử lại.",
+  "trial_checking": "Đã nhận — đang kiểm tra tài khoản Bitunix của bạn. Chỉ mất một chút thôi.",
+  "trial_ask_screenshot": "Sắp xong. Gửi MỘT ảnh chụp màn hình cho thấy tài khoản Bitunix của bạn đã đăng ký dưới mã của chúng tôi và khoản nạp của bạn. Điều này giúp chúng tôi xác nhận nhanh.",
+  "trial_approved_welcome": "Bạn đã được xác minh — chào mừng đến VIP.\n\nChạm để yêu cầu quyền vào nhóm VIP:\n{invite}\n\nBản dùng thử của bạn kéo dài 30 ngày.\n\n{disclaimer}",
+  "trial_needs_manual": "Cảm ơn — chúng tôi đã nhận thông tin của bạn và đang xét duyệt thủ công ngay bây giờ. Việc này thường nhanh (chúng tôi xử lý hàng đợi vài lần mỗi ngày). Bạn sẽ nhận tin nhắn ở đây ngay khi được duyệt.\n\n{disclaimer}",
+  "trial_rejected": "Chúng tôi chưa thể xác minh một khoản nạp hợp lệ dưới link referral của chúng tôi cho UID đó.\n\nHãy chắc chắn rằng bạn: (1) đã đăng ký bằng link CỦA CHÚNG TÔI, và (2) hiện có ít nhất {min_balance} USDT trong tài khoản. Xong rồi thì gửi lại UID của bạn.",
+  "trial_need_proof": "Chúng tôi cần ảnh chụp rõ hơn để xác nhận. Vui lòng gửi một ảnh cho thấy tài khoản Bitunix của bạn (đăng ký dưới mã của chúng tôi) và số dư hiện tại.",
+
+  "paid_tier_menu_header": "Chọn gói VIP của bạn (USDT):\n\nGói tháng linh hoạt. Gói quý tính ra rẻ hơn mỗi tháng. Gói trọn đời là một lần thanh toán, vào là ở luôn.\n\n{disclaimer}",
+  "paid_tier_monthly": "Theo tháng — {price} USDT",
+  "paid_tier_quarterly": "Theo quý (3 tháng) — {price} USDT",
+  "paid_tier_lifetime": "Trọn đời — {price} USDT",
+  "paid_invoice_created": "Hóa đơn của bạn đã sẵn sàng. Thanh toán {price} USDT tại đây:\n{pay_url}\n\nLink có hiệu lực trong 30 phút. Quyền truy cập mở tự động ngay khi thanh toán được xác nhận.\n\n{disclaimer}",
+  "paid_invoice_expired": "Hóa đơn đó đã hết hạn trước khi thanh toán. Không sao — chạm vào một gói lần nữa để lấy hóa đơn mới.",
+  "paid_payment_confirmed": "Đã xác nhận thanh toán — chào mừng đến VIP.\n\nChạm để yêu cầu quyền vào nhóm VIP:\n{invite}\n\n{disclaimer}",
+
+  "vip_welcome_dm": "Bạn đã vào. Chào mừng đến phòng VIP Lifechange Crypto.\n\nViệc cần làm đầu tiên:\n• Bật thông báo cho nhóm để không bỏ lỡ entry trực tiếp.\n• Đọc kỹ từng ý tưởng — entry zone, leverage, SL và TP đều có lý do của nó.\n• Tự quản lý rủi ro của bạn trên mỗi vị thế. Vào lệnh nhỏ khi còn đang học.\n\nMọi thứ ở đây được chia sẻ vì mục đích giáo dục — để giúp bạn học cách giao dịch, không phải lời hứa về bất kỳ kết quả nào.\n\n{disclaimer}",
+
+  "admin_card_title": "Trial mới #{id}\nUser: {tg}\nUID: {uid}\nLang: {lang}\nBalance check: {verdict}",
+  "admin_btn_approve": "Duyệt",
+  "admin_btn_reject": "Từ chối",
+  "admin_btn_needproof": "Cần bằng chứng rõ hơn",
+  "admin_action_approved": "Đã duyệt trial #{id}. Đã báo người dùng và gửi lời mời.",
+  "admin_action_rejected": "Đã từ chối trial #{id}. Đã báo người dùng.",
+  "admin_action_needproof": "Đã yêu cầu người dùng bằng chứng rõ hơn cho trial #{id}.",
+  "admin_action_already_done": "Trial #{id} đã được quyết định trước đó. Không thay đổi.",
+  "admin_queue_empty": "Hàng đợi trống — không có trial nào đang chờ.",
+  "admin_queue_header": "{count} trial đang chờ. Cũ nhất trước:",
+  "admin_queue_item": "#{id} · {tg} · UID {uid} · {lang} · chờ {age}",
+  "admin_token_expired_alert": "Lưu ý: token đối tác Bitunix có vẻ hết hạn hoặc lỗi ({reason}). Auto-verify đang chuyển về xét duyệt thủ công. Hãy làm mới BITUNIX_PARTNER_TOKEN khi có thể.",
+
+  "cadence_welcome": "Đang làm quen với phòng VIP? Mẹo nhanh: mở từng ý tưởng và bám theo SL và TP — chỗ học là ở đó. Tự quản lý rủi ro của bạn trên mỗi lệnh.\n\n{disclaimer}",
+  "cadence_mid": "Bạn đã đi được nửa thời hạn truy cập. Mọi thứ thế nào? Nếu phòng đã hữu ích để hiểu cách dựng entry, bạn có thể gia hạn quyền truy cập bất cứ lúc nào từ menu.\n\n{disclaimer}",
+  "cadence_warn3d": "Quyền VIP của bạn kết thúc sau 3 ngày. Để không gián đoạn các ý tưởng trực tiếp, bạn có thể gia hạn từ menu bất cứ khi nào sẵn sàng.\n\n{disclaimer}",
+  "cadence_lastday": "Ngày cuối của quyền VIP. Sau hôm nay bạn sẽ mất phòng trực tiếp cho đến khi gia hạn. Gia hạn bất cứ lúc nào từ menu để ở lại.\n\n{disclaimer}",
+  "cadence_winback": "Quyền VIP của bạn đã hết và bạn đã bị xóa khỏi phòng. Cửa vẫn mở — gia hạn từ menu và bạn sẽ vào lại ngay.\n\n{disclaimer}",
+
+  "expired_removed_renew": "Quyền VIP của bạn đã hết hạn nên bạn bị xóa khỏi nhóm. Gia hạn bất cứ lúc nào từ menu để vào lại.\n\n{disclaimer}",
+
+  "back": "Quay lại",
+  "cancel": "Hủy",
+  "cancelled": "Đã hủy. Mở menu bất cứ lúc nào bằng /start.",
+  "error_try_again": "Có lỗi xảy ra từ phía chúng tôi. Vui lòng thử lại sau giây lát.",
+  "not_entitled": "Hiện bạn chưa có quyền VIP đang hoạt động. Mở /start để bắt đầu dùng thử hoặc đăng ký.",
+  "trial_already_active": "Bạn đã có quyền VIP đang hoạt động. 🎟"
+}
