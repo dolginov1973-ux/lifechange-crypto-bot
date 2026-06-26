@@ -86,7 +86,7 @@ export default {
         body: JSON.stringify({
           url: `https://${env.WEBHOOK_DOMAIN}/bot`,
           secret_token: env.WEBHOOK_SECRET,
-          allowed_updates: ['message', 'callback_query', 'chat_join_request'],
+          allowed_updates: ['message', 'callback_query', 'chat_join_request', 'my_chat_member'],
         }),
       });
       const body = await tg.text();
