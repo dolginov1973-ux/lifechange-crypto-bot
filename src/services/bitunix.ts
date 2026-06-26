@@ -51,10 +51,14 @@ export async function verifyUid(env: Env, uid: string): Promise<VerifyResult> {
   const ts = Date.now();
   const url = `https://partners.bitunix.com/partner/user/info/${encodeURIComponent(uid)}?_t=${ts}`;
 
+  // Hard timeout so a hanging request can never stall the update handler.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
   let res: Response;
   try {
     res = await fetch(url, {
       method: 'GET',
+      signal: controller.signal,
       headers: {
         token: env.BITUNIX_PARTNER_TOKEN,
         accept: 'application/json, text/plain, */*',
@@ -71,6 +75,8 @@ export async function verifyUid(env: Env, uid: string): Promise<VerifyResult> {
     });
   } catch (err) {
     return { status: 'needs_manual', reason: `fetch_error:${String(err)}` };
+  } finally {
+    clearTimeout(timer);
   }
 
   if (res.status !== 200) {

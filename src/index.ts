@@ -37,8 +37,13 @@ export default {
       if (!provided || provided !== env.WEBHOOK_SECRET) {
         return new Response('forbidden', { status: 403 });
       }
+      // Ack Telegram with 200 IMMEDIATELY and process the update in the background.
+      // If we awaited a slow handler (e.g. the Bitunix verify), Telegram would treat the
+      // webhook as timed out and RE-DELIVER the same update — spamming duplicate replies.
+      // waitUntil keeps the Worker alive until the background processing finishes.
       const handle = createWebhookHandler(env);
-      return handle(req);
+      ctx.waitUntil(handle(req).catch((err) => console.error('webhook bg error:', err)));
+      return new Response('ok', { status: 200 });
     }
 
     // --- payment webhook (signature verified inside the handler) ---
