@@ -46,6 +46,16 @@ $env:CLOUDFLARE_API_TOKEN = $cfg['CLOUDFLARE_API_TOKEN']
 $env:CLOUDFLARE_ACCOUNT_ID = $cfg['CLOUDFLARE_ACCOUNT_ID']
 $env:CI = 'true'
 
+# ---- optional proxy (if the ISP blocks api.cloudflare.com / npm) ----
+# PROXY in .env, format: http://user:pass@host:port. npm + wrangler both honor these.
+if ($cfg['PROXY']) {
+  $env:HTTP_PROXY = $cfg['PROXY']
+  $env:HTTPS_PROXY = $cfg['PROXY']
+  $env:http_proxy = $cfg['PROXY']
+  $env:https_proxy = $cfg['PROXY']
+  Write-Host "Routing npm + wrangler through proxy from .env." -ForegroundColor Yellow
+}
+
 Write-Host "`n[1/6] Installing dependencies..." -ForegroundColor Green
 npm install --no-audit --no-fund
 CheckExit 'npm install'
