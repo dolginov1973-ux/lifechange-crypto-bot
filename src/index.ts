@@ -5,7 +5,7 @@
 // scheduled() -> hourly expiry sweep.
 
 import { type Env } from './config';
-import { createWebhookHandler } from './bot';
+import { createBot } from './bot';
 
 // Feature modules below are implemented by feature engineers to THESE signatures.
 // It's fine that they don't exist yet — the import paths are the contract.
@@ -37,11 +37,29 @@ export default {
       if (!provided || provided !== env.WEBHOOK_SECRET) {
         return new Response('forbidden', { status: 403 });
       }
-      // Process synchronously and let grammY produce the response. Duplicate-delivery
-      // ("checking" x5) is prevented upstream by the hard 8s timeout in verifyUid — the
-      // handler can no longer hang, so it always answers Telegram well within its window.
-      const handle = createWebhookHandler(env);
-      return handle(req);
+      // Read the update body NOW (it cannot be read after we return), then process it in the
+      // background and ack Telegram with an immediate 200 so it never re-delivers the same
+      // update (which was spamming duplicate "checking" replies). grammY sends replies via
+      // the Bot API inside handleUpdate — NOT via the webhook response — so returning early
+      // keeps every reply intact (unlike webhookCallback, which can use the response body).
+      let update: unknown;
+      try {
+        update = await req.json();
+      } catch {
+        return new Response('bad request', { status: 400 });
+      }
+      ctx.waitUntil(
+        (async () => {
+          try {
+            const bot = createBot(env);
+            await bot.init();
+            await bot.handleUpdate(update as Parameters<typeof bot.handleUpdate>[0]);
+          } catch (err) {
+            console.error('update processing failed:', err);
+          }
+        })(),
+      );
+      return new Response('ok', { status: 200 });
     }
 
     // --- payment webhook (signature verified inside the handler) ---
