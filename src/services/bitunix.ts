@@ -4,6 +4,7 @@
 // 'needs_manual' (never auto-reject) so the caller can queue an admin card.
 
 import { type Env } from '../config';
+import { httpsGetViaProxy } from './proxy-fetch';
 
 /** Result of a UID verification attempt. */
 export type VerifyResult =
@@ -42,6 +43,14 @@ interface BitunixEnvelope {
 const CHROME_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36';
 
+/** Reject after `ms` so a hung proxy tunnel can never stall the update handler. */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('proxy_timeout')), ms)),
+  ]);
+}
+
 /**
  * Verify a Bitunix UID against our referral. Returns a discriminated result.
  * Graceful fallback: status != 200, non-JSON body, code != "0", or no result
@@ -49,43 +58,60 @@ const CHROME_UA =
  */
 export async function verifyUid(env: Env, uid: string): Promise<VerifyResult> {
   const ts = Date.now();
-  const url = `https://partners.bitunix.com/partner/user/info/${encodeURIComponent(uid)}?_t=${ts}`;
+  const path = `/partner/user/info/${encodeURIComponent(uid)}?_t=${ts}`;
+  const headers: Record<string, string> = {
+    token: env.BITUNIX_PARTNER_TOKEN,
+    accept: 'application/json, text/plain, */*',
+    'accept-language': 'en-US',
+    referer: 'https://partners.bitunix.com/',
+    'user-agent': CHROME_UA,
+    'sec-ch-ua': '"Chromium";v="147", "Google Chrome";v="147", "Not?A_Brand";v="24"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+  };
 
-  // Hard timeout so a hanging request can never stall the update handler.
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  let res: Response;
+  // partners.bitunix.com WAF-blocks a DIRECT Cloudflare Worker fetch (403). When a PROXY is
+  // configured we tunnel through it (a residential IP the WAF accepts); otherwise direct fetch.
+  // Either path has a hard timeout so the update handler can never hang.
+  let status: number;
+  let bodyText: string;
   try {
-    res = await fetch(url, {
-      method: 'GET',
-      signal: controller.signal,
-      headers: {
-        token: env.BITUNIX_PARTNER_TOKEN,
-        accept: 'application/json, text/plain, */*',
-        'accept-language': 'en-US',
-        referer: 'https://partners.bitunix.com/',
-        'user-agent': CHROME_UA,
-        'sec-ch-ua': '"Chromium";v="147", "Google Chrome";v="147", "Not?A_Brand";v="24"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-origin',
-      },
-    });
+    if (env.PROXY) {
+      const r = await withTimeout(
+        httpsGetViaProxy(env.PROXY, 'partners.bitunix.com', path, headers),
+        9000,
+      );
+      status = r.status;
+      bodyText = r.body;
+    } else {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      try {
+        const res = await fetch(`https://partners.bitunix.com${path}`, {
+          method: 'GET',
+          signal: controller.signal,
+          headers,
+        });
+        status = res.status;
+        bodyText = await res.text();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
   } catch (err) {
     return { status: 'needs_manual', reason: `fetch_error:${String(err)}` };
-  } finally {
-    clearTimeout(timer);
   }
 
-  if (res.status !== 200) {
-    return { status: 'needs_manual', reason: `http_${res.status}` };
+  if (status !== 200) {
+    return { status: 'needs_manual', reason: `http_${status}` };
   }
 
   let body: BitunixEnvelope;
   try {
-    body = (await res.json()) as BitunixEnvelope;
+    body = JSON.parse(bodyText) as BitunixEnvelope;
   } catch {
     return { status: 'needs_manual', reason: 'body_not_json_token_expired_or_error' };
   }

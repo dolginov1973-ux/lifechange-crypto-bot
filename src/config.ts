@@ -15,6 +15,9 @@ export interface Env {
   BITUNIX_PARTNER_TOKEN: string;
   CRYPTOPAY_TOKEN: string;
   WEBHOOK_SECRET: string;
+  // Optional HTTP CONNECT proxy (http://user:pass@host:port). When set, verifyUid tunnels
+  // the Bitunix call through it (Bitunix WAF blocks direct Cloudflare Worker egress). Empty = direct.
+  PROXY: string;
 
   // --- vars ---
   OUR_REF_CODE: string;
