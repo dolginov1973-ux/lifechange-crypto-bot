@@ -77,6 +77,7 @@ jobs:
           V_ADMIN_CHAT_ID: ${{ vars.ADMIN_CHAT_ID }}
           V_BOT_USERNAME: ${{ vars.BOT_USERNAME }}
           V_MIN_BALANCE_USDT: ${{ vars.MIN_BALANCE_USDT }}
+          V_WEBHOOK_DOMAIN: ${{ vars.WEBHOOK_DOMAIN }}
         run: |
           npx wrangler deploy \
             --var "OUR_REF_CODE:${V_OUR_REF_CODE}" \
@@ -85,7 +86,8 @@ jobs:
             --var "VIP_CHAT_ID:${V_VIP_CHAT_ID}" \
             --var "ADMIN_CHAT_ID:${V_ADMIN_CHAT_ID}" \
             --var "BOT_USERNAME:${V_BOT_USERNAME}" \
-            --var "MIN_BALANCE_USDT:${V_MIN_BALANCE_USDT:-50}"
+            --var "MIN_BALANCE_USDT:${V_MIN_BALANCE_USDT:-50}" \
+            --var "WEBHOOK_DOMAIN:${V_WEBHOOK_DOMAIN}"
 
       - name: Upload Worker secrets
         env:

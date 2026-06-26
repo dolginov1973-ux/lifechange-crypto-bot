@@ -46,6 +46,35 @@ export default {
       return handlePayWebhook(req, env, ctx);
     }
 
+    // --- one-time webhook self-registration (guarded by WEBHOOK_SECRET) ---
+    // Open https://<domain>/setup?key=<WEBHOOK_SECRET> once to point Telegram at /bot.
+    // Runs from Cloudflare's edge, so it works even when api.telegram.org is blocked on
+    // the operator's local network. Idempotent — safe to hit more than once.
+    if (req.method === 'GET' && pathname === '/setup') {
+      if (url.searchParams.get('key') !== env.WEBHOOK_SECRET) {
+        return new Response('forbidden', { status: 403 });
+      }
+      if (!env.WEBHOOK_DOMAIN) {
+        return new Response('WEBHOOK_DOMAIN is not set — set the var + redeploy first.', {
+          status: 400,
+        });
+      }
+      const tg = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/setWebhook`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          url: `https://${env.WEBHOOK_DOMAIN}/bot`,
+          secret_token: env.WEBHOOK_SECRET,
+          allowed_updates: ['message', 'callback_query', 'chat_join_request'],
+        }),
+      });
+      const body = await tg.text();
+      return new Response(body, {
+        status: tg.ok ? 200 : 502,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
     return new Response('not found', { status: 404 });
   },
 

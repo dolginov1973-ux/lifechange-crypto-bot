@@ -1,5 +1,7 @@
 node_modules/
 .dev.vars
+.env
+secrets.tmp.json
 .wrangler/
 dist/
 

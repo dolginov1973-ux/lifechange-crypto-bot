@@ -24,6 +24,10 @@ export interface Env {
   ADMIN_CHAT_ID: string;    // private admin-review chat id
   BOT_USERNAME: string;
   REFERRAL_LINK: string;
+  // Custom domain the Worker is reachable at (e.g. lcbot.modernbroke.com). Used by the
+  // one-time GET /setup route to register the Telegram webhook from Cloudflare's side
+  // (so it works even where api.telegram.org is blocked on the operator's own network).
+  WEBHOOK_DOMAIN: string;
 }
 
 // ---------------------------------------------------------------------------
