@@ -28,6 +28,7 @@ import { registerTrial } from './handlers/trial';
 import { registerPaid } from './handlers/paid';
 import { registerAdmin } from './handlers/admin';
 import { registerJoin } from './handlers/join';
+import { registerUtil } from './handlers/util';
 
 export type RegisterFn = (bot: Bot<MyContext>) => void;
 
@@ -51,6 +52,7 @@ export function createBot(env: Env): Bot<MyContext> {
   registerPaid(bot);
   registerJoin(bot);
   registerAdmin(bot);
+  registerUtil(bot);
 
   // Last-resort error boundary so a thrown handler never 500s the webhook
   // (Telegram would otherwise retry the same update forever).

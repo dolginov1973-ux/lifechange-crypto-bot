@@ -1,0 +1,115 @@
+name: Deploy VIP Bot
+
+# Push-button deploy to Cloudflare Workers. Set the GH secrets + variables below once,
+# then run this (Actions tab -> Deploy VIP Bot -> Run workflow). It: installs deps,
+# creates/resolves the D1 database, applies the schema, deploys the Worker (vars passed
+# inline), uploads the Worker secrets, and points the Telegram webhook at your domain.
+#
+# REQUIRED GitHub SECRETS (Settings -> Secrets and variables -> Actions -> Secrets):
+#   CLOUDFLARE_API_TOKEN   - token with Workers Scripts:Edit + D1:Edit (use the
+#                            "Edit Cloudflare Workers" template; ensure D1 is included)
+#   CLOUDFLARE_ACCOUNT_ID  - your Cloudflare account id (dashboard right sidebar)
+#   BOT_TOKEN              - Telegram bot token from @BotFather
+#   BITUNIX_PARTNER_TOKEN  - partners.bitunix.com `token` header value (refreshable)
+#   WEBHOOK_SECRET         - any random string; guards /bot and is the Telegram secret_token
+#   CRYPTOPAY_TOKEN        - CryptoBot Crypto Pay app token (may be left empty until paid path is needed)
+#
+# REQUIRED GitHub VARIABLES (same screen -> Variables):
+#   OUR_REF_CODE      - our Bitunix invitation code (result.invitationCode must equal this)
+#   OUR_PARTNER_UID   - our Bitunix partner uid (result.parentUid must equal this)
+#   REFERRAL_LINK     - full Bitunix referral link shown to trial users
+#   VIP_CHAT_ID       - VIP supergroup id (negative, e.g. -1001234567890). Use /id in the group.
+#   ADMIN_CHAT_ID     - admin-review chat id (your DM with the bot, or a private group). Use /id.
+#   BOT_USERNAME      - the bot @username without @
+#   WEBHOOK_DOMAIN    - the custom domain attached to this Worker (e.g. lcbot.modernbroke.com)
+#   MIN_BALANCE_USDT  - optional, defaults to 50
+#
+# ONE-TIME (dashboard, after the first deploy): Workers & Pages -> lifechange-crypto-bot
+#   -> Settings -> Domains & Routes -> Add Custom Domain -> <WEBHOOK_DOMAIN>. Then re-run.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vip-bot
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        run: npm install --no-audit --no-fund
+
+      - name: Create or resolve D1 database
+        id: d1
+        run: |
+          npx wrangler d1 create lifechange-crypto-bot 2>/dev/null || true
+          DBID=$(npx wrangler d1 list --json | jq -r '.[] | select(.name=="lifechange-crypto-bot") | .uuid')
+          if [ -z "$DBID" ] || [ "$DBID" = "null" ]; then
+            echo "::error::Could not create/resolve D1 'lifechange-crypto-bot' — check CLOUDFLARE_API_TOKEN has D1:Edit."
+            exit 1
+          fi
+          echo "dbid=$DBID" >> "$GITHUB_OUTPUT"
+          echo "D1 id: $DBID"
+
+      - name: Inject D1 id into wrangler.toml
+        run: sed -i "s|REPLACE_WITH_D1_DATABASE_ID|${{ steps.d1.outputs.dbid }}|" wrangler.toml
+
+      - name: Apply D1 schema (idempotent)
+        run: npx wrangler d1 execute lifechange-crypto-bot --remote --file=schema.sql
+
+      - name: Deploy Worker (vars passed inline)
+        env:
+          V_OUR_REF_CODE: ${{ vars.OUR_REF_CODE }}
+          V_OUR_PARTNER_UID: ${{ vars.OUR_PARTNER_UID }}
+          V_REFERRAL_LINK: ${{ vars.REFERRAL_LINK }}
+          V_VIP_CHAT_ID: ${{ vars.VIP_CHAT_ID }}
+          V_ADMIN_CHAT_ID: ${{ vars.ADMIN_CHAT_ID }}
+          V_BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+          V_MIN_BALANCE_USDT: ${{ vars.MIN_BALANCE_USDT }}
+        run: |
+          npx wrangler deploy \
+            --var "OUR_REF_CODE:${V_OUR_REF_CODE}" \
+            --var "OUR_PARTNER_UID:${V_OUR_PARTNER_UID}" \
+            --var "REFERRAL_LINK:${V_REFERRAL_LINK}" \
+            --var "VIP_CHAT_ID:${V_VIP_CHAT_ID}" \
+            --var "ADMIN_CHAT_ID:${V_ADMIN_CHAT_ID}" \
+            --var "BOT_USERNAME:${V_BOT_USERNAME}" \
+            --var "MIN_BALANCE_USDT:${V_MIN_BALANCE_USDT:-50}"
+
+      - name: Upload Worker secrets
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          BITUNIX_PARTNER_TOKEN: ${{ secrets.BITUNIX_PARTNER_TOKEN }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          CRYPTOPAY_TOKEN: ${{ secrets.CRYPTOPAY_TOKEN }}
+        run: |
+          printf '%s' "$BOT_TOKEN"             | npx wrangler secret put BOT_TOKEN
+          printf '%s' "$BITUNIX_PARTNER_TOKEN" | npx wrangler secret put BITUNIX_PARTNER_TOKEN
+          printf '%s' "$WEBHOOK_SECRET"        | npx wrangler secret put WEBHOOK_SECRET
+          printf '%s' "${CRYPTOPAY_TOKEN:-PLACEHOLDER}" | npx wrangler secret put CRYPTOPAY_TOKEN
+
+      - name: Point Telegram webhook at the Worker
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          WEBHOOK_DOMAIN: ${{ vars.WEBHOOK_DOMAIN }}
+        run: |
+          if [ -z "$WEBHOOK_DOMAIN" ]; then
+            echo "::warning::WEBHOOK_DOMAIN not set — skipping setWebhook. Attach the custom domain, set the var, re-run."
+            exit 0
+          fi
+          curl -fsS "https://api.telegram.org/bot${BOT_TOKEN}/setWebhook" \
+            --data-urlencode "url=https://${WEBHOOK_DOMAIN}/bot" \
+            --data-urlencode "secret_token=${WEBHOOK_SECRET}" \
+            --data-urlencode 'allowed_updates=["message","callback_query","chat_join_request"]' | jq .
