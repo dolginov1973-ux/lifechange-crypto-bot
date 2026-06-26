@@ -1,0 +1,31 @@
+name: Diag Bitunix
+
+# TEMP: probe the live Worker's /diag route from a datacenter IP (Actions can reach
+# *.workers.dev). Shows where auto-verify breaks: tunnel mechanics (ipify), tunnel->
+# Bitunix, direct->Bitunix, and the classified verify result. Remove with /diag once
+# auto-verify is confirmed working.
+
+on:
+  workflow_dispatch:
+    inputs:
+      uid:
+        description: 'Bitunix UID to probe'
+        required: false
+        default: '525949154'
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit /diag and print JSON
+        env:
+          DOMAIN: ${{ vars.WEBHOOK_DOMAIN }}
+          KEY: ${{ secrets.WEBHOOK_SECRET }}
+          UID: ${{ inputs.uid }}
+        run: |
+          if [ -z "$DOMAIN" ]; then echo "::error::WEBHOOK_DOMAIN var not set"; exit 1; fi
+          echo "Probing UID=$UID via https://$DOMAIN/diag"
+          curl -sS "https://${DOMAIN}/diag?key=${KEY}&uid=${UID}" | jq . || {
+            echo "::error::curl/jq failed (raw below):"
+            curl -sS "https://${DOMAIN}/diag?key=${KEY}&uid=${UID}"
+          }

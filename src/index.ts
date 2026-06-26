@@ -16,6 +16,8 @@ import { createBot } from './bot';
 //     export function runSweep(env: Env): Promise<void>
 import { handlePayWebhook } from './handlers/pay-webhook';
 import { runSweep } from './sweep';
+import { httpsGetViaProxy } from './services/proxy-fetch';
+import { verifyUid } from './services/bitunix';
 
 // Telegram sets this header on every webhook call when you pass `secret_token` to
 // setWebhook. We compare it to WEBHOOK_SECRET to reject forged requests.
@@ -92,6 +94,78 @@ export default {
       const body = await tg.text();
       return new Response(body, {
         status: tg.ok ? 200 : 502,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    // --- TEMP diagnostics for auto-verify transport (guarded by WEBHOOK_SECRET) ---
+    // GET /diag?key=<WEBHOOK_SECRET>&uid=<uid>. Runs the full Bitunix-verify suite and
+    // returns raw outcomes so we can see WHERE it breaks: tunnel mechanics (ipify),
+    // tunnel->Bitunix, direct->Bitunix (the 403), and the classified verify result.
+    // REMOVE once auto-verify is confirmed working — it can echo partner data.
+    if (req.method === 'GET' && pathname === '/diag') {
+      if (url.searchParams.get('key') !== env.WEBHOOK_SECRET) {
+        return new Response('forbidden', { status: 403 });
+      }
+      const uid = url.searchParams.get('uid') ?? '525949154';
+      const out: Record<string, unknown> = { proxy: env.PROXY ? 'set' : 'unset', uid };
+
+      const CHROME_UA =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36';
+      const biHeaders: Record<string, string> = {
+        token: env.BITUNIX_PARTNER_TOKEN,
+        accept: 'application/json, text/plain, */*',
+        'accept-language': 'en-US',
+        referer: 'https://partners.bitunix.com/',
+        'user-agent': CHROME_UA,
+      };
+      const biPath = `/partner/user/info/${encodeURIComponent(uid)}?_t=${Date.now()}`;
+      const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
+        Promise.race([
+          p,
+          new Promise<T>((_, rej) => setTimeout(() => rej(new Error(`timeout_${ms}ms`)), ms)),
+        ]);
+
+      if (env.PROXY) {
+        try {
+          const r = await withTimeout(
+            httpsGetViaProxy(env.PROXY, 'api.ipify.org', '/?format=json', {
+              'user-agent': 'curl/8',
+              accept: '*/*',
+            }),
+            8000,
+          );
+          out.ipifyViaProxy = { status: r.status, body: r.body.slice(0, 200) };
+        } catch (e) {
+          out.ipifyViaProxy = { error: String(e) };
+        }
+        try {
+          const r = await withTimeout(
+            httpsGetViaProxy(env.PROXY, 'partners.bitunix.com', biPath, biHeaders),
+            8000,
+          );
+          out.bitunixViaProxy = { status: r.status, body: r.body.slice(0, 400) };
+        } catch (e) {
+          out.bitunixViaProxy = { error: String(e) };
+        }
+      }
+      try {
+        const r = await withTimeout(
+          fetch(`https://partners.bitunix.com${biPath}`, { headers: biHeaders }),
+          8000,
+        );
+        out.bitunixDirect = { status: r.status, body: (await r.text()).slice(0, 200) };
+      } catch (e) {
+        out.bitunixDirect = { error: String(e) };
+      }
+      try {
+        out.verify = await verifyUid(env, uid);
+      } catch (e) {
+        out.verifyError = String(e);
+      }
+
+      return new Response(JSON.stringify(out, null, 2), {
+        status: 200,
         headers: { 'content-type': 'application/json' },
       });
     }
