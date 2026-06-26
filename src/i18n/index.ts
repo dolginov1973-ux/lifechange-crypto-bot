@@ -43,7 +43,19 @@ export function t(
   const l = asLang(lang);
   const template =
     LOCALES[l]?.[key as string] ?? (en as Locale)[key as string] ?? String(key);
-  return interpolate(template, vars);
+
+  // Many templates embed the localized {disclaimer}. Auto-supply it so callers
+  // never leak a literal "{disclaimer}" by forgetting to pass it. Explicit vars
+  // win (so join.ts passing its own disclaimer still takes precedence). Skip when
+  // rendering the disclaimer itself to avoid any self-reference.
+  let effectiveVars = vars;
+  if (key !== 'disclaimer') {
+    const localizedDisclaimer =
+      LOCALES[l]?.['disclaimer'] ?? (en as Locale)['disclaimer'] ?? '';
+    effectiveVars = { disclaimer: localizedDisclaimer, ...(vars ?? {}) };
+  }
+
+  return interpolate(template, effectiveVars);
 }
 
 function interpolate(template: string, vars?: Record<string, string | number>): string {
