@@ -15,9 +15,13 @@ export interface Env {
   BITUNIX_PARTNER_TOKEN: string;
   CRYPTOPAY_TOKEN: string;
   WEBHOOK_SECRET: string;
-  // Optional HTTP CONNECT proxy (http://user:pass@host:port). When set, verifyUid tunnels
-  // the Bitunix call through it (Bitunix WAF blocks direct Cloudflare Worker egress). Empty = direct.
+  // Optional HTTP CONNECT proxy (http://user:pass@host:port). Legacy raw-socket tunnel —
+  // Workers' startTls over CONNECT fails the TLS handshake, so this path is unused; prefer RELAY_URL.
   PROXY: string;
+  // External Node relay base URL (e.g. https://lc-bitunix-relay.vercel.app). When set,
+  // verifyUid calls <RELAY_URL>/api/verify (the Worker can't reach Bitunix directly/via proxy).
+  RELAY_URL: string;
+  RELAY_SECRET: string; // shared secret sent to the relay as the x-relay-secret header
 
   // --- vars ---
   OUR_REF_CODE: string;

@@ -158,6 +158,22 @@ export default {
       } catch (e) {
         out.bitunixDirect = { error: String(e) };
       }
+      if (env.RELAY_URL) {
+        try {
+          const base = env.RELAY_URL.replace(/\/+$/, '');
+          const r = await withTimeout(
+            fetch(`${base}/api/verify?uid=${encodeURIComponent(uid)}`, {
+              headers: { 'x-relay-secret': env.RELAY_SECRET },
+            }),
+            8000,
+          );
+          out.relay = { httpStatus: r.status, body: (await r.text()).slice(0, 500) };
+        } catch (e) {
+          out.relay = { error: String(e) };
+        }
+      } else {
+        out.relay = 'RELAY_URL unset';
+      }
       try {
         out.verify = await verifyUid(env, uid);
       } catch (e) {

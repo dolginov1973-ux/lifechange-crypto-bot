@@ -4,7 +4,6 @@
 // 'needs_manual' (never auto-reject) so the caller can queue an admin card.
 
 import { type Env } from '../config';
-import { httpsGetViaProxy } from './proxy-fetch';
 
 /** Result of a UID verification attempt. */
 export type VerifyResult =
@@ -43,12 +42,27 @@ interface BitunixEnvelope {
 const CHROME_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36';
 
-/** Reject after `ms` so a hung proxy tunnel can never stall the update handler. */
+/** Reject after `ms` so a hung transport can never stall the update handler. */
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
     p,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('proxy_timeout')), ms)),
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('transport_timeout')), ms)),
   ]);
+}
+
+/**
+ * Fetch the Bitunix partner JSON through the external Node relay. The relay holds its
+ * own token + (optional) proxy and reaches Bitunix from a datacenter IP, returning
+ * { via, status, body }. We surface { status, body } so the parser below is unchanged.
+ */
+async function fetchViaRelay(env: Env, uid: string): Promise<{ status: number; body: string }> {
+  const base = env.RELAY_URL.replace(/\/+$/, '');
+  const url = `${base}/api/verify?uid=${encodeURIComponent(uid)}`;
+  const res = await fetch(url, { headers: { 'x-relay-secret': env.RELAY_SECRET } });
+  if (!res.ok) throw new Error(`relay_http_${res.status}`);
+  const j = (await res.json()) as { status?: number; body?: string; error?: string };
+  if (j.error) throw new Error(`relay_error:${j.error}`);
+  return { status: Number(j.status ?? 0), body: String(j.body ?? '') };
 }
 
 /**
@@ -73,17 +87,15 @@ export async function verifyUid(env: Env, uid: string): Promise<VerifyResult> {
     'sec-fetch-site': 'same-origin',
   };
 
-  // partners.bitunix.com WAF-blocks a DIRECT Cloudflare Worker fetch (403). When a PROXY is
-  // configured we tunnel through it (a residential IP the WAF accepts); otherwise direct fetch.
-  // Either path has a hard timeout so the update handler can never hang.
+  // A DIRECT Cloudflare Worker fetch to partners.bitunix.com is WAF-blocked (403), and the
+  // raw-socket proxy tunnel fails the TLS handshake in Workers. So when RELAY_URL is set we
+  // go through the external Node relay (preferred). Otherwise we attempt a direct fetch (which
+  // will 403 → needs_manual). Either path has a hard timeout so the handler can never hang.
   let status: number;
   let bodyText: string;
   try {
-    if (env.PROXY) {
-      const r = await withTimeout(
-        httpsGetViaProxy(env.PROXY, 'partners.bitunix.com', path, headers),
-        9000,
-      );
+    if (env.RELAY_URL) {
+      const r = await withTimeout(fetchViaRelay(env, uid), 9000);
       status = r.status;
       bodyText = r.body;
     } else {

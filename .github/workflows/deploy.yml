@@ -78,6 +78,7 @@ jobs:
           V_BOT_USERNAME: ${{ vars.BOT_USERNAME }}
           V_MIN_BALANCE_USDT: ${{ vars.MIN_BALANCE_USDT }}
           V_WEBHOOK_DOMAIN: ${{ vars.WEBHOOK_DOMAIN }}
+          V_RELAY_URL: ${{ vars.RELAY_URL }}
         run: |
           npx wrangler deploy \
             --var "OUR_REF_CODE:${V_OUR_REF_CODE}" \
@@ -87,7 +88,8 @@ jobs:
             --var "ADMIN_CHAT_ID:${V_ADMIN_CHAT_ID}" \
             --var "BOT_USERNAME:${V_BOT_USERNAME}" \
             --var "MIN_BALANCE_USDT:${V_MIN_BALANCE_USDT:-50}" \
-            --var "WEBHOOK_DOMAIN:${V_WEBHOOK_DOMAIN}"
+            --var "WEBHOOK_DOMAIN:${V_WEBHOOK_DOMAIN}" \
+            --var "RELAY_URL:${V_RELAY_URL}"
 
       - name: Upload Worker secrets
         env:
@@ -96,12 +98,14 @@ jobs:
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
           CRYPTOPAY_TOKEN: ${{ secrets.CRYPTOPAY_TOKEN }}
           PROXY: ${{ secrets.PROXY }}
+          RELAY_SECRET: ${{ secrets.RELAY_SECRET }}
         run: |
           printf '%s' "$BOT_TOKEN"             | npx wrangler secret put BOT_TOKEN
           printf '%s' "$BITUNIX_PARTNER_TOKEN" | npx wrangler secret put BITUNIX_PARTNER_TOKEN
           printf '%s' "$WEBHOOK_SECRET"        | npx wrangler secret put WEBHOOK_SECRET
           printf '%s' "${CRYPTOPAY_TOKEN:-PLACEHOLDER}" | npx wrangler secret put CRYPTOPAY_TOKEN
           printf '%s' "${PROXY:-PLACEHOLDER}"  | npx wrangler secret put PROXY
+          printf '%s' "${RELAY_SECRET:-PLACEHOLDER}" | npx wrangler secret put RELAY_SECRET
 
       - name: Point Telegram webhook at the Worker
         env:
