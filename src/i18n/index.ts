@@ -4,15 +4,15 @@
 import { type Lang, asLang } from '../config';
 
 import en from './en.json';
-// Additional locales are added by translators as ./<lang>.json and registered below.
-// They may be partial — any missing key falls back to en. Keep these imports static
-// (Workers bundles them at build time; no dynamic import / fs at runtime).
-// import hi from './hi.json';
-// import pt from './pt.json';
-// import vi from './vi.json';
-// import es from './es.json';
-// import tr from './tr.json';
-// import id from './id.json';
+// Additional locales live as ./<lang>.json. They may be partial — any missing key
+// falls back to en (see t()). Imports are static (Workers bundles JSON at build time;
+// no dynamic import / fs at runtime).
+import hi from './hi.json';
+import pt from './pt.json';
+import vi from './vi.json';
+import es from './es.json';
+import tr from './tr.json';
+import id from './id.json';
 
 /** A flat record of message keys -> template strings. */
 export type Locale = Record<string, string>;
@@ -20,12 +20,12 @@ export type Locale = Record<string, string>;
 /** Registry of available locales. en is the master/fallback and is always complete. */
 const LOCALES: Partial<Record<Lang, Locale>> = {
   en: en as Locale,
-  // hi: hi as Locale,
-  // pt: pt as Locale,
-  // vi: vi as Locale,
-  // es: es as Locale,
-  // tr: tr as Locale,
-  // id: id as Locale,
+  hi: hi as Locale,
+  pt: pt as Locale,
+  vi: vi as Locale,
+  es: es as Locale,
+  tr: tr as Locale,
+  id: id as Locale,
 };
 
 /** The full set of keys (derived from the master en locale). */

@@ -166,6 +166,34 @@ export async function expireEntitlement(env: Env, id: number): Promise<void> {
     .run();
 }
 
+/**
+ * The single active, non-expired entitlement bound to a Bitunix UID (whoever holds it).
+ * Used by relink to find the current member occupying a UID's one slot.
+ */
+export async function getActiveEntitlementByUid(
+  env: Env,
+  uid: string,
+): Promise<EntitlementRow | null> {
+  const now = nowSec();
+  return env.DB.prepare(
+    `SELECT * FROM entitlements
+     WHERE bitunix_uid = ? AND status = 'active'
+       AND (expires_at IS NULL OR expires_at > ?)
+     ORDER BY id DESC LIMIT 1`,
+  )
+    .bind(uid, now)
+    .first<EntitlementRow>();
+}
+
+/** Mark an entitlement revoked (relink takeover). Idempotent — only flips active rows. */
+export async function revokeEntitlement(env: Env, id: number): Promise<void> {
+  await env.DB.prepare(
+    `UPDATE entitlements SET status = 'revoked' WHERE id = ? AND status = 'active'`,
+  )
+    .bind(id)
+    .run();
+}
+
 // ---------------------------------------------------------------------------
 // Redeemed UIDs (one trial per UID, forever)
 // ---------------------------------------------------------------------------
@@ -184,6 +212,19 @@ export async function redeemUid(env: Env, uid: string, telegram_id: number): Pro
      VALUES (?, ?, ?)`,
   )
     .bind(uid, telegram_id, nowSec())
+    .run();
+}
+
+/** Re-point a redeemed UID at its new current holder (relink takeover). */
+export async function setRedeemedUidHolder(
+  env: Env,
+  uid: string,
+  telegram_id: number,
+): Promise<void> {
+  await env.DB.prepare(
+    `UPDATE redeemed_uids SET telegram_id = ?, redeemed_at = ? WHERE bitunix_uid = ?`,
+  )
+    .bind(telegram_id, nowSec(), uid)
     .run();
 }
 

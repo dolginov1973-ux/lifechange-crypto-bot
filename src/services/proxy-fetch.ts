@@ -120,7 +120,7 @@ export async function httpsGetViaProxy(
   const all = concat(respChunks);
   const sep = indexOfCRLFCRLF(all);
   const headText = new TextDecoder().decode(sep >= 0 ? all.slice(0, sep) : all);
-  let bodyBytes = sep >= 0 ? all.slice(sep + 4) : new Uint8Array(0);
+  let bodyBytes: Uint8Array = sep >= 0 ? all.slice(sep + 4) : new Uint8Array(0);
   const m = headText.match(/^HTTP\/1\.[01] (\d{3})/);
   const status = m ? Number(m[1]) : 0;
   if (/transfer-encoding:\s*chunked/i.test(headText)) {

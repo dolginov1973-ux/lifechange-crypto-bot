@@ -11,12 +11,20 @@
 // message (when the user has no active entitlement) as a UID submission. Non-numeric
 // text is ignored so other handlers can process it.
 
-import { type Bot } from 'grammy';
+import { type Bot, InlineKeyboard } from 'grammy';
 import { type MyContext } from '../bot';
 import { type Env, asLang } from '../config';
-import { getUser, getActiveEntitlement, isUidRedeemed, createTrialSubmission, getTrialSubmission } from '../db';
+import {
+  getUser,
+  getActiveEntitlement,
+  getActiveEntitlementByUid,
+  isUidRedeemed,
+  revokeEntitlement,
+  createTrialSubmission,
+  getTrialSubmission,
+} from '../db';
 import { verifyUid } from '../services/bitunix';
-import { grantTrialAccess } from '../services/access';
+import { grantTrialAccess, relinkAccess, kickFromVip, sendDM } from '../services/access';
 import { postAdminCard, alertAdmin } from './admin';
 import { t } from '../i18n';
 
@@ -55,6 +63,52 @@ export function registerTrial(bot: Bot<MyContext>): void {
     await ctx.reply(t(lang, 'trial_ask_uid'));
   });
 
+  // --- Relink: move a UID's single VIP slot to this requester --------------
+  // Shown when someone submits a UID that already holds live access. Kicks the
+  // previous holder, revokes their link + entitlement, and re-issues to the
+  // requester carrying the SAME expiry (no trial reset). One UID = one member.
+  bot.callbackQuery(/^relink:(\d{5,})$/, async (ctx) => {
+    const uid = ctx.match?.[1] ?? '';
+    const requester = ctx.from.id;
+    const lang = await userLang(ctx.env, requester, ctx.from.language_code);
+
+    const active = await getActiveEntitlementByUid(ctx.env, uid);
+    if (!active) {
+      // Expired between tapping the button and now — nothing left to move.
+      await ctx.answerCallbackQuery();
+      await ctx.reply(t(lang, 'trial_uid_already_used'));
+      return;
+    }
+
+    // Block only a requester who is already a VIP via a DIFFERENT entitlement — that
+    // would be grabbing a second slot. A current holder re-issuing their OWN UID
+    // (requesterEnt is this same row) is allowed: the "I lost my link" case.
+    const requesterEnt = await getActiveEntitlement(ctx.env, requester);
+    if (requesterEnt != null && requesterEnt.id !== active.id) {
+      await ctx.answerCallbackQuery();
+      await ctx.reply(t(lang, 'trial_already_active'));
+      return;
+    }
+
+    await ctx.answerCallbackQuery();
+
+    const prevHolder = active.telegram_id;
+
+    // Remove the previous holder from the VIP channel + kill their old link, then
+    // revoke their entitlement so the DB / expiry sweep stays consistent.
+    await kickFromVip(ctx.env, prevHolder, active.invite_link);
+    await revokeEntitlement(ctx.env, active.id);
+
+    // Tell the displaced member — only if it's a different person.
+    if (prevHolder !== requester) {
+      const prevLang = (await getUser(ctx.env, prevHolder))?.lang ?? 'en';
+      await sendDM(ctx.env, prevHolder, t(prevLang, 'vip_access_transferred'));
+    }
+
+    // Re-issue to the requester (clones source/tier/expiry — no reset).
+    await relinkAccess(ctx.env, requester, active, lang);
+  });
+
   // --- UID submission (numeric-message heuristic) --------------------------
   // TODO(feature: trial): replace this numeric-heuristic with a proper grammY
   // conversation/session once a session store is added — so we only treat text as
@@ -69,19 +123,33 @@ export function registerTrial(bot: Bot<MyContext>): void {
     }
 
     const tgId = ctx.from.id;
-
-    // If they already have access, this isn't a trial submission — pass it on.
-    if ((await getActiveEntitlement(ctx.env, tgId)) != null) {
-      await next();
-      return;
-    }
-
     const lang = await userLang(ctx.env, tgId, ctx.from.language_code);
     const uid = text;
 
-    // One trial per UID, forever.
+    // A UID that was already redeemed. If it STILL holds a live VIP slot, offer to
+    // (re)issue the link to THIS requester — which removes whoever currently holds it
+    // (one UID = one member). This runs BEFORE the "already a VIP" guard so a current
+    // holder who lost their link and re-sends their own UID gets the relink offer
+    // instead of silence. If the access already expired, the UID is simply spent.
     if (await isUidRedeemed(ctx.env, uid)) {
-      await ctx.reply(t(lang, 'trial_uid_already_used'));
+      const active = await getActiveEntitlementByUid(ctx.env, uid);
+      if (active) {
+        await ctx.reply(t(lang, 'trial_uid_already_member'), {
+          reply_markup: new InlineKeyboard().text(
+            t(lang, 'btn_get_new_link'),
+            `relink:${uid}`,
+          ),
+        });
+      } else {
+        await ctx.reply(t(lang, 'trial_uid_already_used'));
+      }
+      return;
+    }
+
+    // UID not redeemed yet. If they already have access (via a different UID / paid),
+    // this isn't a new trial — pass it on so other handlers can run.
+    if ((await getActiveEntitlement(ctx.env, tgId)) != null) {
+      await next();
       return;
     }
 

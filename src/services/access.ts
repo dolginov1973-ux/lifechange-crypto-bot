@@ -2,8 +2,8 @@
 // Workers runtime only (global fetch, no node:*). Functions are small and defensive
 // so a single dead DM or a failed kick never aborts a flow or the expiry sweep.
 
-import { type Env, tierDurationDays, nowSec, asLang } from '../config';
-import { grantEntitlement, redeemUid } from '../db';
+import { type Env, type Tier, tierDurationDays, nowSec, asLang } from '../config';
+import { type EntitlementRow, grantEntitlement, redeemUid, setRedeemedUidHolder } from '../db';
 import { t } from '../i18n';
 
 /**
@@ -179,4 +179,36 @@ export async function grantPaidAccess(
   });
 
   await sendDM(env, telegramId, t(asLang(lang), 'paid_payment_confirmed', { invite: link }));
+}
+
+/**
+ * Re-issue VIP access for a UID to a NEW (or returning) requester, taking over the
+ * single slot that UID owns. The CALLER must have already kicked the previous holder
+ * and revoked their entitlement. We clone the previous entitlement's source/tier/expiry
+ * onto a fresh personal invite (NO trial reset — the original clock keeps running),
+ * re-point the UID ledger at the requester, and DM the new link. Enforces the
+ * "one UID = one member" invariant the operator asked for.
+ */
+export async function relinkAccess(
+  env: Env,
+  telegramId: number,
+  prev: EntitlementRow,
+  lang: string,
+): Promise<void> {
+  const link = await createPersonalInvite(env, 'relink', telegramId);
+
+  await grantEntitlement(env, {
+    telegram_id: telegramId,
+    source: prev.source,
+    tier: (prev.tier ?? 'trial30') as Tier,
+    expires_at: prev.expires_at, // carry forward — relinking does not extend access
+    bitunix_uid: prev.bitunix_uid,
+    invite_link: link,
+  });
+
+  if (prev.bitunix_uid) {
+    await setRedeemedUidHolder(env, prev.bitunix_uid, telegramId);
+  }
+
+  await sendDM(env, telegramId, t(asLang(lang), 'trial_relink_done', { invite: link }));
 }
