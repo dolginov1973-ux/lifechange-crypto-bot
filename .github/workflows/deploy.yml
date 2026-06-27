@@ -79,6 +79,7 @@ jobs:
           V_MIN_BALANCE_USDT: ${{ vars.MIN_BALANCE_USDT }}
           V_WEBHOOK_DOMAIN: ${{ vars.WEBHOOK_DOMAIN }}
           V_RELAY_URL: ${{ vars.RELAY_URL }}
+          V_CRYPTOPAY_API_BASE: ${{ vars.CRYPTOPAY_API_BASE }}
         run: |
           npx wrangler deploy \
             --var "OUR_REF_CODE:${V_OUR_REF_CODE}" \
@@ -89,7 +90,8 @@ jobs:
             --var "BOT_USERNAME:${V_BOT_USERNAME}" \
             --var "MIN_BALANCE_USDT:${V_MIN_BALANCE_USDT:-50}" \
             --var "WEBHOOK_DOMAIN:${V_WEBHOOK_DOMAIN}" \
-            --var "RELAY_URL:${V_RELAY_URL}"
+            --var "RELAY_URL:${V_RELAY_URL}" \
+            --var "CRYPTOPAY_API_BASE:${V_CRYPTOPAY_API_BASE}"
 
       - name: Upload Worker secrets
         env:

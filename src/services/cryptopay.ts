@@ -28,7 +28,8 @@ export async function createInvoice(
   tier: PaidTier,
   amount: number,
 ): Promise<{ invoiceId: string; payUrl: string }> {
-  const res = await fetch('https://pay.crypt.bot/api/createInvoice', {
+  const apiBase = env.CRYPTOPAY_API_BASE || 'https://pay.crypt.bot';
+  const res = await fetch(`${apiBase}/api/createInvoice`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',

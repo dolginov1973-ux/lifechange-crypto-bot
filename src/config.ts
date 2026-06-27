@@ -15,6 +15,9 @@ export interface Env {
   BITUNIX_PARTNER_TOKEN: string;
   CRYPTOPAY_TOKEN: string;
   WEBHOOK_SECRET: string;
+  // Crypto Pay API base — leave empty for mainnet (https://pay.crypt.bot). Set to
+  // https://testnet-pay.crypt.bot (with a @CryptoTestnetBot app token) to test for free.
+  CRYPTOPAY_API_BASE: string;
   // External Node relay base URL (e.g. https://lc-bitunix-relay.vercel.app). The Worker
   // can't reach Bitunix directly (CF->CF 403); verifyUid calls <RELAY_URL>/api/verify.
   RELAY_URL: string;
