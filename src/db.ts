@@ -429,6 +429,19 @@ export async function getDueExpiries(env: Env, now: number): Promise<Entitlement
   return res.results ?? [];
 }
 
+/** Active, still-valid TRIAL entitlements — the audience for the conversion cadence. */
+export async function getActiveTrialEntitlements(env: Env): Promise<EntitlementRow[]> {
+  const now = nowSec();
+  const res = await env.DB.prepare(
+    `SELECT * FROM entitlements
+     WHERE status = 'active' AND source = 'trial'
+       AND expires_at IS NOT NULL AND expires_at > ?`,
+  )
+    .bind(now)
+    .all<EntitlementRow>();
+  return res.results ?? [];
+}
+
 // ---------------------------------------------------------------------------
 // Cadence log (dedupe conversion DMs)
 // ---------------------------------------------------------------------------

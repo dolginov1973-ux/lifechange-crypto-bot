@@ -66,8 +66,8 @@ export type SubmissionStatus = 'pending' | 'approved' | 'rejected' | 'need_proof
 export type Processor = 'cryptopay' | 'nowpayments' | 'static_trc20';
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
-/** Conversion cadence stages. */
-export type CadenceStage = 'welcome' | 'mid' | 'warn3d' | 'lastday' | 'winback';
+/** Conversion cadence stages (trial → paid drip). */
+export type CadenceStage = 'welcome' | 'day7' | 'mid' | 'warn3d' | 'lastday' | 'winback';
 
 // ---------------------------------------------------------------------------
 // Helpers

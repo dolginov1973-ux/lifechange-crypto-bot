@@ -11,9 +11,18 @@
 // Each entitlement is processed in its own try/catch so one failure never aborts the
 // batch. expireEntitlement / kickFromVip are idempotent, so re-running is safe.
 
-import { type Env, nowSec } from './config';
-import { getActiveEntitlement, getDueExpiries, expireEntitlement } from './db';
-import { kickFromVip } from './services/access';
+import { InlineKeyboard } from 'grammy';
+import { type Env, nowSec, asLang } from './config';
+import {
+  getActiveEntitlement,
+  getDueExpiries,
+  expireEntitlement,
+  getUser,
+  wasCadenceSent,
+  logCadence,
+} from './db';
+import { kickFromVip, sendDM } from './services/access';
+import { t } from './i18n';
 
 export async function runSweep(env: Env): Promise<void> {
   const now = nowSec();
@@ -28,6 +37,19 @@ export async function runSweep(env: Env): Promise<void> {
 
       if (!stillEntitled) {
         await kickFromVip(env, ent.telegram_id, ent.invite_link);
+
+        // Win-back: the loss is now real (they're removed) — DM it + one tap back in.
+        // Once per entitlement (deduped), and best-effort so a dead DM never blocks expiry.
+        if (!(await wasCadenceSent(env, ent.id, 'winback'))) {
+          try {
+            const lang = asLang((await getUser(env, ent.telegram_id))?.lang);
+            const kb = new InlineKeyboard().text(t(lang, 'cadence_back_btn'), 'buy');
+            await sendDM(env, ent.telegram_id, t(lang, 'cadence_winback'), kb);
+            await logCadence(env, ent.telegram_id, ent.id, 'winback');
+          } catch (e) {
+            console.error('winback', ent.id, e);
+          }
+        }
       }
 
       await expireEntitlement(env, ent.id);
@@ -35,6 +57,5 @@ export async function runSweep(env: Env): Promise<void> {
       // Isolate per-row failures so the rest of the batch still drains.
       console.error('sweep', ent.id, e);
     }
-    // TODO(v1): conversion cadence — DM lapsed users an expired/win-back message here.
   }
 }

@@ -16,6 +16,7 @@ import { createBot } from './bot';
 //     export function runSweep(env: Env): Promise<void>
 import { handlePayWebhook } from './handlers/pay-webhook';
 import { runSweep } from './sweep';
+import { runCadence } from './cadence';
 
 // Telegram sets this header on every webhook call when you pass `secret_token` to
 // setWebhook. We compare it to WEBHOOK_SECRET to reject forged requests.
@@ -100,7 +101,13 @@ export default {
   },
 
   async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    // Don't let the cron invocation finish before the sweep does.
-    ctx.waitUntil(runSweep(env));
+    // Hourly: send the trial→paid conversion cadence, then sweep expired access
+    // (the sweep also fires the win-back DM on the row it removes).
+    ctx.waitUntil(
+      (async () => {
+        await runCadence(env);
+        await runSweep(env);
+      })(),
+    );
   },
 };
