@@ -228,6 +228,38 @@ export async function setRedeemedUidHolder(
     .run();
 }
 
+/**
+ * Admin reset (testing): revoke a user's active entitlements and free every UID they
+ * redeemed, so that telegram_id can run the trial again from scratch. Returns counts +
+ * the invite links to revoke. Does NOT touch Telegram — caller kicks/revokes links.
+ */
+export async function resetUserData(
+  env: Env,
+  telegram_id: number,
+): Promise<{ entitlements: number; uids: number; links: string[] }> {
+  const rows = await env.DB.prepare(
+    `SELECT invite_link FROM entitlements WHERE telegram_id = ? AND invite_link IS NOT NULL`,
+  )
+    .bind(telegram_id)
+    .all<{ invite_link: string }>();
+  const links = (rows.results ?? []).map((r) => r.invite_link).filter(Boolean);
+
+  const ent = await env.DB.prepare(
+    `UPDATE entitlements SET status = 'revoked' WHERE telegram_id = ? AND status = 'active'`,
+  )
+    .bind(telegram_id)
+    .run();
+  const uid = await env.DB.prepare(`DELETE FROM redeemed_uids WHERE telegram_id = ?`)
+    .bind(telegram_id)
+    .run();
+
+  return {
+    entitlements: Number(ent.meta.changes ?? 0),
+    uids: Number(uid.meta.changes ?? 0),
+    links,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Trial submissions (review queue / fallback)
 // ---------------------------------------------------------------------------

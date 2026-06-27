@@ -13,8 +13,9 @@ import {
   setSubmissionStatus,
   getPendingSubmissions,
   countPendingSubmissions,
+  resetUserData,
 } from '../db';
-import { sendDM, callTelegram, grantTrialAccess } from '../services/access';
+import { sendDM, callTelegram, grantTrialAccess, kickFromVip } from '../services/access';
 import { t } from '../i18n';
 
 /**
@@ -107,5 +108,41 @@ export function registerAdmin(bot: Bot<MyContext>): void {
     );
 
     await ctx.reply(`${t('en', 'admin_queue_header', { count: n })}\n${lines.join('\n')}`);
+  });
+
+  // /reset [telegram_id] — admin testing tool. Revokes a user's active entitlements,
+  // frees every UID they redeemed, and kicks them from the VIP channel, so that account
+  // can run the trial again from scratch. No arg = reset YOUR own account. Admin chat only.
+  bot.command('reset', async (ctx) => {
+    if (ctx.chat?.id !== Number(ctx.env.ADMIN_CHAT_ID)) return;
+
+    const arg = typeof ctx.match === 'string' ? ctx.match.trim() : '';
+    const targetId = /^\d{4,}$/.test(arg) ? Number(arg) : arg === '' ? (ctx.from?.id ?? 0) : 0;
+    if (!targetId) {
+      await ctx.reply(
+        'Usage: /reset <telegram_id> — or /reset alone to reset YOUR own account.\n' +
+          'Revokes VIP access, frees the redeemed UID(s), and kicks that account from the ' +
+          'VIP channel so it can run the trial again. Tip: send /id from an account to get its id.',
+      );
+      return;
+    }
+
+    const { entitlements, uids, links } = await resetUserData(ctx.env, targetId);
+    for (const link of links) {
+      try {
+        await callTelegram(ctx.env, 'revokeChatInviteLink', {
+          chat_id: ctx.env.VIP_CHAT_ID,
+          invite_link: link,
+        });
+      } catch {
+        // already revoked / not found — fine
+      }
+    }
+    await kickFromVip(ctx.env, targetId);
+
+    await ctx.reply(
+      `✅ Reset ${targetId}: revoked ${entitlements} entitlement(s), freed ${uids} UID(s), ` +
+        `kicked from VIP. That account can /start a fresh trial now.`,
+    );
   });
 }
