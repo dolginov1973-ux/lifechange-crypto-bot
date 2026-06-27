@@ -1,6 +1,7 @@
 {
   "disclaimer": "Not financial advice. High-leverage crypto futures carry a high risk of total loss. Never risk money you can't afford to lose.",
   "start_welcome": "👋 Welcome to Lifechange Crypto VIP.\n\n🔓 This is the inside room: live trade ideas, entries, leverage, SL and TP levels, and the reasoning behind each one — for education, so you can learn to read the market yourself.\n\n👉 Pick your language to continue.",
+  "start_welcome_edu": "📊 Welcome to Lifechange Crypto.\n\nWe help you learn to read crypto futures with data — funding rates, liquidations, on-chain flows — explained simply, with transparent and verifiable analysis. No hype, no empty promises.\n\nEducational content only — not financial advice. Crypto trading carries a high risk of loss.\n\n👉 Pick your language to start.",
   "language_picker": "Choose your language:",
   "language_set": "✅ Language set to English. Let's get you set up.",
   "main_menu_header": "🎯 How would you like to get in?\n\n{disclaimer}",

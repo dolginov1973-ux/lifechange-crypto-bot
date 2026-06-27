@@ -48,10 +48,15 @@ export function registerStart(bot: Bot<MyContext>): void {
     const payload = typeof ctx.match === 'string' ? ctx.match.trim() : '';
     if (payload) await recordAcquisition(ctx.env, fromId, payload);
 
+    // Ad traffic (?start=ad_...) sees an EDUCATION-FIRST welcome so the bot's first screen reads
+    // "analytics/education", not "VIP signals" — required to pass Telegram Ad moderation, which
+    // reviews the ad destination. Organic /start keeps the normal welcome.
+    const fromAd = payload.startsWith('ad_');
+
     const user = await getUser(ctx.env, fromId);
 
     if (!user?.lang) {
-      await ctx.reply(t('en', 'start_welcome'));
+      await ctx.reply(t('en', fromAd ? 'start_welcome_edu' : 'start_welcome'));
       await ctx.reply(t('en', 'language_picker'), { reply_markup: languageKeyboard() });
       return;
     }
