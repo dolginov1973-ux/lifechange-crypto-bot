@@ -473,3 +473,45 @@ export async function logCadence(
     .bind(telegram_id, entitlement_id, stage, nowSec())
     .run();
 }
+
+// ---------------------------------------------------------------------------
+// Dormant-user warm-up (started the bot, never acted)
+// ---------------------------------------------------------------------------
+
+/**
+ * Users who /start'd within [minCreatedAt, maxCreatedAt] but NEVER acted — no
+ * entitlement (ever) and no trial submission (ever). The warm-up audience.
+ */
+export async function getDormantUsers(
+  env: Env,
+  maxCreatedAt: number,
+  minCreatedAt: number,
+): Promise<UserRow[]> {
+  const res = await env.DB.prepare(
+    `SELECT u.* FROM users u
+     WHERE u.created_at <= ? AND u.created_at >= ?
+       AND NOT EXISTS (SELECT 1 FROM entitlements e WHERE e.telegram_id = u.telegram_id)
+       AND NOT EXISTS (SELECT 1 FROM trial_submissions s WHERE s.telegram_id = u.telegram_id)`,
+  )
+    .bind(maxCreatedAt, minCreatedAt)
+    .all<UserRow>();
+  return res.results ?? [];
+}
+
+export async function wasWarmupSent(env: Env, telegram_id: number, stage: string): Promise<boolean> {
+  const row = await env.DB.prepare(
+    'SELECT 1 AS x FROM warmup_log WHERE telegram_id = ? AND stage = ?',
+  )
+    .bind(telegram_id, stage)
+    .first<{ x: number }>();
+  return row != null;
+}
+
+/** Record a warm-up stage as sent. INSERT OR IGNORE = safe to retry. */
+export async function logWarmup(env: Env, telegram_id: number, stage: string): Promise<void> {
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO warmup_log (telegram_id, stage, sent_at) VALUES (?, ?, ?)`,
+  )
+    .bind(telegram_id, stage, nowSec())
+    .run();
+}

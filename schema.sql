@@ -70,9 +70,17 @@ CREATE TABLE IF NOT EXISTS pricing (
 CREATE TABLE IF NOT EXISTS cadence_log (
   telegram_id    INTEGER NOT NULL,
   entitlement_id INTEGER NOT NULL,
-  stage          TEXT NOT NULL,                -- 'welcome'|'mid'|'warn3d'|'lastday'|'winback'
+  stage          TEXT NOT NULL,                -- 'welcome'|'day7'|'mid'|'warn3d'|'lastday'|'winback'
   sent_at        INTEGER NOT NULL,
   PRIMARY KEY (entitlement_id, stage)
+);
+
+-- Dormant-user warm-up dedupe: people who /start'd but never acted (no trial, no pay).
+CREATE TABLE IF NOT EXISTS warmup_log (
+  telegram_id INTEGER NOT NULL,
+  stage       TEXT NOT NULL,                   -- 'warm1'|'warm2'|'warm3'
+  sent_at     INTEGER NOT NULL,
+  PRIMARY KEY (telegram_id, stage)
 );
 
 -- Indexes (spec §6).
