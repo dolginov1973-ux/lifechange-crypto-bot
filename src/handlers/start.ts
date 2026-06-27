@@ -21,6 +21,7 @@ const LANG_LABELS: Record<string, string> = {
   es: 'Español',
   tr: 'Türkçe',
   id: 'Bahasa Indonesia',
+  ru: 'Русский',
 };
 
 /** Build the language picker keyboard (callback_data 'lang:<code>', 2 per row). */

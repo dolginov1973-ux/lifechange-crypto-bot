@@ -45,7 +45,7 @@ export interface Env {
 export const TRIAL_DAYS = 30 as const;
 
 /** Supported languages (also the 7 free-channel languages). */
-export const LANGS = ['en', 'hi', 'pt', 'vi', 'es', 'tr', 'id'] as const;
+export const LANGS = ['en', 'hi', 'pt', 'vi', 'es', 'tr', 'id', 'ru'] as const;
 export type Lang = (typeof LANGS)[number];
 
 /** Public free channel per language — warm-up destination for ad traffic (ad → bot → channel). */
@@ -57,6 +57,7 @@ export const PUBLIC_CHANNELS: Record<Lang, string> = {
   es: 'https://t.me/LifeChange_crypto_es',
   tr: 'https://t.me/LifeChange_crypto_tr',
   id: 'https://t.me/LifeChange_crypto_id',
+  ru: 'https://t.me/LifeChange_crypto_ru',
 };
 
 /** Geo pricing bands. */

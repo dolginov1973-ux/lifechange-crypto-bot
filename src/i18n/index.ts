@@ -13,6 +13,7 @@ import vi from './vi.json';
 import es from './es.json';
 import tr from './tr.json';
 import id from './id.json';
+import ru from './ru.json';
 
 /** A flat record of message keys -> template strings. */
 export type Locale = Record<string, string>;
@@ -26,6 +27,7 @@ const LOCALES: Partial<Record<Lang, Locale>> = {
   es: es as Locale,
   tr: tr as Locale,
   id: id as Locale,
+  ru: ru as Locale,
 };
 
 /** The full set of keys (derived from the master en locale). */
