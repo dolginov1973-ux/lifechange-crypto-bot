@@ -48,6 +48,17 @@ export const TRIAL_DAYS = 30 as const;
 export const LANGS = ['en', 'hi', 'pt', 'vi', 'es', 'tr', 'id'] as const;
 export type Lang = (typeof LANGS)[number];
 
+/** Public free channel per language — warm-up destination for ad traffic (ad → bot → channel). */
+export const PUBLIC_CHANNELS: Record<Lang, string> = {
+  en: 'https://t.me/LifeChange_crypto',
+  hi: 'https://t.me/LifeChange_crypto_hi',
+  pt: 'https://t.me/LifeChange_crypto_pt',
+  vi: 'https://t.me/LifeChange_crypto_vi',
+  es: 'https://t.me/LifeChange_crypto_es',
+  tr: 'https://t.me/LifeChange_crypto_tr',
+  id: 'https://t.me/LifeChange_crypto_id',
+};
+
 /** Geo pricing bands. */
 export type GeoBand = 'low' | 'mid';
 

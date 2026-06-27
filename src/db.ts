@@ -111,6 +111,15 @@ export async function recordAcquisition(env: Env, telegram_id: number, source: s
     .run();
 }
 
+/** First-touch acquisition source for a user, or null. Used to route ad traffic to the free
+ *  channel first (sources starting with 'ad_'). */
+export async function getAcquisitionSource(env: Env, telegram_id: number): Promise<string | null> {
+  const row = await env.DB.prepare('SELECT source FROM acquisition WHERE telegram_id = ?')
+    .bind(telegram_id)
+    .first<{ source: string }>();
+  return row?.source ?? null;
+}
+
 /** Acquisition counts per source (paid-ad ROI): [{ source, n }] desc by n. */
 export async function getAcquisitionCounts(env: Env): Promise<Array<{ source: string; n: number }>> {
   const { results } = await env.DB.prepare(

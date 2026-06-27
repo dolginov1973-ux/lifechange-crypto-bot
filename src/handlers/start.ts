@@ -4,9 +4,13 @@
 
 import { Bot, InlineKeyboard } from 'grammy';
 import { type MyContext } from '../bot';
-import { asLang, LANGS } from '../config';
-import { getUser, upsertUser, recordAcquisition } from '../db';
+import { asLang, LANGS, PUBLIC_CHANNELS } from '../config';
+import { getUser, upsertUser, recordAcquisition, getAcquisitionSource } from '../db';
 import { t } from '../i18n';
+
+/** True if a user came from a paid ad (deep-link source ad_*). Such traffic is warmed via the
+ *  free public channel FIRST, not pushed straight into the VIP trial/buy. */
+const isAdSource = (src: string | null): boolean => !!src && src.startsWith('ad_');
 
 /** Human-readable label per supported language code (for the picker buttons). */
 const LANG_LABELS: Record<string, string> = {
@@ -37,6 +41,26 @@ function mainMenuKeyboard(lang: string): InlineKeyboard {
     .text(t(lang, 'main_menu_buy_btn'), 'buy');
 }
 
+/** Education-first menu for AD traffic: free public channel (warm-up) as the primary CTA, with
+ *  the VIP trial/buy kept as secondary options below. */
+function eduMenuKeyboard(lang: string): InlineKeyboard {
+  return new InlineKeyboard()
+    .url(t(lang, 'edu_join_channel_btn'), PUBLIC_CHANNELS[asLang(lang)])
+    .row()
+    .text(t(lang, 'main_menu_trial_btn'), 'trial')
+    .row()
+    .text(t(lang, 'main_menu_buy_btn'), 'buy');
+}
+
+/** Show the right post-onboarding menu: ad traffic → education/channel-first, organic → VIP menu. */
+async function sendMenu(ctx: MyContext, lang: string, ad: boolean): Promise<void> {
+  if (ad) {
+    await ctx.reply(t(lang, 'edu_menu_header'), { reply_markup: eduMenuKeyboard(lang) });
+  } else {
+    await ctx.reply(t(lang, 'main_menu_header'), { reply_markup: mainMenuKeyboard(lang) });
+  }
+}
+
 export function registerStart(bot: Bot<MyContext>): void {
   // /start: greet + language picker if no stored lang, else jump to the main menu.
   bot.command('start', async (ctx) => {
@@ -61,12 +85,13 @@ export function registerStart(bot: Bot<MyContext>): void {
       return;
     }
 
-    await ctx.reply(t(user.lang, 'main_menu_header'), {
-      reply_markup: mainMenuKeyboard(user.lang),
-    });
+    // Returning user: ad-origin users (this click OR first-touch source) get the channel-first
+    // menu; organic users get the VIP menu.
+    const ad = fromAd || isAdSource(await getAcquisitionSource(ctx.env, fromId));
+    await sendMenu(ctx, user.lang, ad);
   });
 
-  // lang:<code> — store the chosen language, then show the main menu.
+  // lang:<code> — store the chosen language, then show the right menu (ad → channel-first).
   bot.callbackQuery(/^lang:(\w{2})$/, async (ctx) => {
     const fromId = ctx.from?.id;
     if (fromId === undefined) return;
@@ -76,8 +101,7 @@ export function registerStart(bot: Bot<MyContext>): void {
     await ctx.answerCallbackQuery();
 
     await ctx.reply(t(code, 'language_set'));
-    await ctx.reply(t(code, 'main_menu_header'), {
-      reply_markup: mainMenuKeyboard(code),
-    });
+    const ad = isAdSource(await getAcquisitionSource(ctx.env, fromId));
+    await sendMenu(ctx, code, ad);
   });
 }
