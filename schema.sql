@@ -13,6 +13,16 @@ CREATE TABLE IF NOT EXISTS users (
   last_seen_at  INTEGER
 );
 
+-- Acquisition attribution: first-touch source per user, captured from the /start deep-link
+-- payload (t.me/<bot>?start=<source>). One row per user, first source wins (ON CONFLICT DO
+-- NOTHING). Lets us measure cost-per-start per paid ad placement. Separate from users so it
+-- needs no migration and never overwrites organic users.
+CREATE TABLE IF NOT EXISTS acquisition (
+  telegram_id   INTEGER PRIMARY KEY,
+  source        TEXT NOT NULL,                 -- ad/channel tag, e.g. 'ad_cryptoph'
+  created_at    INTEGER NOT NULL
+);
+
 -- Source of truth for VIP access. One ACTIVE row per user at a time.
 CREATE TABLE IF NOT EXISTS entitlements (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -95,6 +95,30 @@ export async function upsertUser(env: Env, telegram_id: number, lang: string): P
     .run();
 }
 
+/**
+ * Record first-touch acquisition source from a /start deep-link payload. First source wins
+ * (ON CONFLICT DO NOTHING) so organic re-/start's never overwrite the original ad attribution.
+ * Sanitizes the tag to [a-zA-Z0-9_-], max 64 chars; no-ops on empty.
+ */
+export async function recordAcquisition(env: Env, telegram_id: number, source: string): Promise<void> {
+  const clean = source.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
+  if (!clean) return;
+  await env.DB.prepare(
+    `INSERT INTO acquisition (telegram_id, source, created_at) VALUES (?, ?, ?)
+     ON CONFLICT(telegram_id) DO NOTHING`,
+  )
+    .bind(telegram_id, clean, nowSec())
+    .run();
+}
+
+/** Acquisition counts per source (paid-ad ROI): [{ source, n }] desc by n. */
+export async function getAcquisitionCounts(env: Env): Promise<Array<{ source: string; n: number }>> {
+  const { results } = await env.DB.prepare(
+    `SELECT source, COUNT(*) AS n FROM acquisition GROUP BY source ORDER BY n DESC`,
+  ).all<{ source: string; n: number }>();
+  return results ?? [];
+}
+
 export async function setUserLang(env: Env, telegram_id: number, lang: string): Promise<void> {
   await env.DB.prepare(
     'UPDATE users SET lang = ?, geo_band = ?, last_seen_at = ? WHERE telegram_id = ?',

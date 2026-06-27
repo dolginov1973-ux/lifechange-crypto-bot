@@ -14,6 +14,7 @@ import {
   getPendingSubmissions,
   countPendingSubmissions,
   resetUserData,
+  getAcquisitionCounts,
 } from '../db';
 import { sendDM, callTelegram, grantTrialAccess, kickFromVip } from '../services/access';
 import { t } from '../i18n';
@@ -108,6 +109,21 @@ export function registerAdmin(bot: Bot<MyContext>): void {
     );
 
     await ctx.reply(`${t('en', 'admin_queue_header', { count: n })}\n${lines.join('\n')}`);
+  });
+
+  // /sources — acquisition attribution report (admin chat only). Counts /start's per deep-link
+  // source so we can compute cost-per-start for each paid ad placement. Untagged organic /start's
+  // simply don't appear here.
+  bot.command('sources', async (ctx) => {
+    if (ctx.chat?.id !== Number(ctx.env.ADMIN_CHAT_ID)) return;
+    const rows = await getAcquisitionCounts(ctx.env);
+    if (!rows.length) {
+      await ctx.reply('No tagged acquisition sources yet. Use deep links: t.me/<bot>?start=ad_<tag>');
+      return;
+    }
+    const total = rows.reduce((s, r) => s + r.n, 0);
+    const lines = rows.map((r) => `${String(r.n).padStart(5)}  ${r.source}`);
+    await ctx.reply(`📊 Acquisition by source (tagged /start's)\n\n${lines.join('\n')}\n\nTotal tagged: ${total}`);
   });
 
   // /reset [telegram_id] — admin testing tool. Revokes a user's active entitlements,

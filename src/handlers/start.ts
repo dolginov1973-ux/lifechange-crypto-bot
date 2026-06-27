@@ -5,7 +5,7 @@
 import { Bot, InlineKeyboard } from 'grammy';
 import { type MyContext } from '../bot';
 import { asLang, LANGS } from '../config';
-import { getUser, upsertUser } from '../db';
+import { getUser, upsertUser, recordAcquisition } from '../db';
 import { t } from '../i18n';
 
 /** Human-readable label per supported language code (for the picker buttons). */
@@ -42,6 +42,11 @@ export function registerStart(bot: Bot<MyContext>): void {
   bot.command('start', async (ctx) => {
     const fromId = ctx.from?.id;
     if (fromId === undefined) return;
+
+    // Deep-link attribution: t.me/<bot>?start=<source> arrives as ctx.match. Record first-touch
+    // source for paid-ad ROI (cost-per-start per placement). First source wins.
+    const payload = typeof ctx.match === 'string' ? ctx.match.trim() : '';
+    if (payload) await recordAcquisition(ctx.env, fromId, payload);
 
     const user = await getUser(ctx.env, fromId);
 
