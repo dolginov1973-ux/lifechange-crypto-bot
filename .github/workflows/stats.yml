@@ -1,0 +1,37 @@
+name: Bot stats (acquisition)
+
+# Read-only: query the acquisition table (deep-link sources / cost-per-start) from the
+# live D1. Actions -> Bot stats (acquisition) -> Run workflow. Re-runnable any time.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install deps
+        run: npm install --no-audit --no-fund
+      - name: Resolve D1 id
+        id: d1
+        run: |
+          DBID=$(npx wrangler d1 list --json | jq -r '.[] | select(.name=="lifechange-crypto-bot") | .uuid')
+          if [ -z "$DBID" ] || [ "$DBID" = "null" ]; then echo "::error::D1 not found"; exit 1; fi
+          echo "dbid=$DBID" >> "$GITHUB_OUTPUT"
+      - name: Inject D1 id
+        run: sed -i "s|REPLACE_WITH_D1_DATABASE_ID|${{ steps.d1.outputs.dbid }}|" wrangler.toml
+      - name: Query acquisition
+        run: |
+          echo "===== TOTAL USERS ====="
+          npx wrangler d1 execute lifechange-crypto-bot --remote --command "SELECT COUNT(*) AS total_users FROM acquisition"
+          echo "===== PER-SOURCE (cost-per-start basis) ====="
+          npx wrangler d1 execute lifechange-crypto-bot --remote --command "SELECT source, COUNT(*) AS n, MIN(created_at) AS first_seen, MAX(created_at) AS last_seen FROM acquisition GROUP BY source ORDER BY n DESC"
+          echo "===== LAST 20 STARTS ====="
+          npx wrangler d1 execute lifechange-crypto-bot --remote --command "SELECT source, created_at FROM acquisition ORDER BY created_at DESC LIMIT 20"
