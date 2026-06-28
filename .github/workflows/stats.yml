@@ -35,3 +35,5 @@ jobs:
           npx wrangler d1 execute lifechange-crypto-bot --remote --command "SELECT source, COUNT(*) AS n, MIN(created_at) AS first_seen, MAX(created_at) AS last_seen FROM acquisition GROUP BY source ORDER BY n DESC"
           echo "===== LAST 20 STARTS ====="
           npx wrangler d1 execute lifechange-crypto-bot --remote --command "SELECT source, created_at FROM acquisition ORDER BY created_at DESC LIMIT 20"
+          echo "===== FUNNEL PER USER (source -> lang -> trial -> entitlement -> paid -> warmups) ====="
+          npx wrangler d1 execute lifechange-crypto-bot --remote --command "SELECT a.source, a.telegram_id, u.lang, u.last_seen_at, (SELECT COUNT(*) FROM trial_submissions t WHERE t.telegram_id=a.telegram_id) AS trials, (SELECT COUNT(*) FROM entitlements e WHERE e.telegram_id=a.telegram_id) AS ents, (SELECT COUNT(*) FROM payments p WHERE p.telegram_id=a.telegram_id AND p.status='paid') AS paid, (SELECT COUNT(*) FROM warmup_log w WHERE w.telegram_id=a.telegram_id) AS warmups FROM acquisition a LEFT JOIN users u ON u.telegram_id=a.telegram_id ORDER BY a.created_at DESC"
