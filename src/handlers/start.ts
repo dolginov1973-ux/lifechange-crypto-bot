@@ -5,7 +5,7 @@
 import { Bot, InlineKeyboard } from 'grammy';
 import { type MyContext } from '../bot';
 import { asLang, LANGS, PUBLIC_CHANNELS } from '../config';
-import { getUser, upsertUser, recordAcquisition, getAcquisitionSource } from '../db';
+import { getUser, upsertUser, recordAcquisition, getAcquisitionSource, recordChannelClick } from '../db';
 import { t } from '../i18n';
 
 /** True if a user came from a paid ad (deep-link source ad_*). Such traffic is warmed via the
@@ -45,8 +45,10 @@ function mainMenuKeyboard(lang: string): InlineKeyboard {
 /** Education-first menu for AD traffic: free public channel (warm-up) as the primary CTA, with
  *  the VIP trial/buy kept as secondary options below. */
 function eduMenuKeyboard(lang: string): InlineKeyboard {
+  // "Join the free channel" is a CALLBACK (not a direct URL) so we can log the click and measure
+  // the bot→channel through-rate per ad source; the joinch handler then hands over the real link.
   return new InlineKeyboard()
-    .url(t(lang, 'edu_join_channel_btn'), PUBLIC_CHANNELS[asLang(lang)])
+    .text(t(lang, 'edu_join_channel_btn'), 'joinch')
     .row()
     .text(t(lang, 'main_menu_trial_btn'), 'trial')
     .row()
@@ -104,5 +106,19 @@ export function registerStart(bot: Bot<MyContext>): void {
     await ctx.reply(t(code, 'language_set'));
     const ad = isAdSource(await getAcquisitionSource(ctx.env, fromId));
     await sendMenu(ctx, code, ad);
+  });
+
+  // joinch — "Join the free channel" intent: log the click (bot→channel through-rate per ad
+  // source), then hand over the real channel link as a tappable URL button.
+  bot.callbackQuery('joinch', async (ctx) => {
+    const fromId = ctx.from?.id;
+    if (fromId === undefined) return;
+    const user = await getUser(ctx.env, fromId);
+    const lang = asLang(user?.lang);
+    await recordChannelClick(ctx.env, fromId, lang);
+    await ctx.answerCallbackQuery();
+    await ctx.reply(t(lang, 'edu_channel_link_msg'), {
+      reply_markup: new InlineKeyboard().url(t(lang, 'edu_join_channel_btn'), PUBLIC_CHANNELS[lang]),
+    });
   });
 }

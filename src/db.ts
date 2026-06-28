@@ -128,6 +128,17 @@ export async function getAcquisitionCounts(env: Env): Promise<Array<{ source: st
   return results ?? [];
 }
 
+/** Log a "Join the free channel" button click (bot -> public channel through-rate). One row per
+ *  click (the final URL tap to Telegram is untrackable, so this captures join INTENT). Join to
+ *  acquisition to see channel through-rate per ad source. */
+export async function recordChannelClick(env: Env, telegram_id: number, lang: string): Promise<void> {
+  await env.DB.prepare(
+    `INSERT INTO channel_clicks (telegram_id, lang, created_at) VALUES (?, ?, ?)`,
+  )
+    .bind(telegram_id, lang, nowSec())
+    .run();
+}
+
 export async function setUserLang(env: Env, telegram_id: number, lang: string): Promise<void> {
   await env.DB.prepare(
     'UPDATE users SET lang = ?, geo_band = ?, last_seen_at = ? WHERE telegram_id = ?',

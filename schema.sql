@@ -93,6 +93,16 @@ CREATE TABLE IF NOT EXISTS warmup_log (
   PRIMARY KEY (telegram_id, stage)
 );
 
+-- "Join the free channel" button clicks (bot -> public channel through-rate). One row per click
+-- (the final URL tap into Telegram is untrackable; this captures join INTENT). Join to
+-- acquisition by telegram_id to get channel through-rate per ad source.
+CREATE TABLE IF NOT EXISTS channel_clicks (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  telegram_id INTEGER NOT NULL,
+  lang        TEXT,
+  created_at  INTEGER NOT NULL
+);
+
 -- Indexes (spec §6).
 CREATE INDEX IF NOT EXISTS idx_entitlements_sweep    ON entitlements(status, expires_at);
 CREATE INDEX IF NOT EXISTS idx_entitlements_user     ON entitlements(telegram_id, status);
